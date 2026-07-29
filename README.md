@@ -101,6 +101,10 @@ Vocabulary, kanji, and grammar cards have a 🔊 button. By default it uses the 
 
 For consistent natural voices, set `GOOGLE_TTS_API_KEY` (a Google Cloud key with the Text-to-Speech API enabled) and `VITE_TTS_MODE=server`. The client then plays audio from `api/tts.ts` (Google `ja-JP-Neural2`), which returns a **CDN-cacheable MP3**. Because the app's text is a fixed set, each clip is generated once and cached — so the free tier is effectively never spent. If the server call fails, it falls back to the browser voice automatically.
 
+## Handwriting (Write)
+
+The `/write` page has a responsive drawing canvas (mouse / touch / stylus with pressure), trace guide, replay, and automatic grading (glyph-mask neatness + coverage + stroke-count). It covers **every JLPT kanji**: the JLPT kanji lists, on'yomi/kun'yomi readings, meanings, and example words are loaded at runtime from [kanjiapi.dev](https://kanjiapi.dev) (backed by **KANJIDIC2**, © EDRDG, **CC BY-SA**), and animated **stroke order** from [KanjiVG](https://kanjivg.tagaini.net/) (© Ulrich Apel et al., **CC BY-SA 3.0**) via the jsDelivr CDN. Everything is cached per character, with a built-in starter set as offline fallback. Attribution is shown in-app; derivative data should keep the CC BY-SA license.
+
 ## Progress & unlocking
 
 All progress shown in the UI is derived from the signed-in user's saved data (`progress.completedLessons`) via `src/lib/progress.ts` — nothing is hardcoded. A new account starts empty: only **N5** is unlocked, every bar reads 0%, and the Dashboard shows empty states. Completing lessons advances the section/level bars, the JLPT progress, "learned" counts, the study heatmap, weakest-topics, exam readiness, XP, coins, and streak. Each level unlocks once the previous one reaches **60%**.

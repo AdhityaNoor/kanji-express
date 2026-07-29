@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 /**
@@ -35,7 +36,7 @@ function apiDevGuard(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), apiDevGuard()],
+  plugins: [react(), tailwindcss(), apiDevGuard()],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },

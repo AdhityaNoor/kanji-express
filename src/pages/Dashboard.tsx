@@ -43,6 +43,7 @@ export default function Dashboard() {
 
   const active = activeLevel(completed)
   const target = user?.jlptTarget ?? 'N5'
+  const jlptLevels = COURSE_LEVELS.filter((level) => level.kind === 'jlpt')
 
   // "Up next" = the current (first incomplete) lesson in each section of the active level.
   const upNext: Lesson[] = active
@@ -169,7 +170,7 @@ export default function Dashboard() {
             <Badge tone="brand">Targeting {target}</Badge>
           </CardHeader>
           <CardBody className="space-y-4">
-            {COURSE_LEVELS.map((lvl) => {
+            {jlptLevels.map((lvl) => {
               const overall = levelOverall(lvl, completed)
               const isTarget = lvl.level === target
               return (

@@ -6,24 +6,26 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { SpeakButton } from '@/components/ui/SpeakButton'
-import { getLevel, SECTION_META, type SectionId } from '@/data/courses'
-import { getLessonItems, type StudyItem } from '@/data/content'
+import { getLevel, SECTION_META, SECTION_ORDER, lessonTitle, lessonDescription, type SectionId } from '@/data/courses'
+import { getLessonDef, getLessonItems, type StudyItem } from '@/data/content'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
-
-const SECTION_IDS: SectionId[] = ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
 
 export default function Lesson() {
   const { level = '', section = '', lesson = '0' } = useParams()
   const navigate = useNavigate()
 
   const course = getLevel(level)
-  const sectionId = SECTION_IDS.includes(section as SectionId) ? (section as SectionId) : undefined
+  const sectionId = SECTION_ORDER.includes(section as SectionId) ? (section as SectionId) : undefined
   const lessonIndex = Number.parseInt(lesson, 10) || 0
 
   const items = useMemo(
     () => (course && sectionId ? getLessonItems(course.level, sectionId, lessonIndex) : []),
+    [course, sectionId, lessonIndex],
+  )
+  const lessonDef = useMemo(
+    () => (course && sectionId ? getLessonDef(course.level, sectionId, lessonIndex) : undefined),
     [course, sectionId, lessonIndex],
   )
 
@@ -40,7 +42,7 @@ export default function Lesson() {
         <Card className="p-10 text-center">
           <p className="text-sm text-fg-muted">This lesson could not be found.</p>
           <Link to="/courses" className="mt-3 inline-block text-sm font-semibold text-accent-fg">
-            ← Back to courses
+            Back to courses
           </Link>
         </Card>
       </div>
@@ -56,7 +58,6 @@ export default function Lesson() {
     if (gotIt) setCorrect(nextCorrect)
     if (step + 1 >= total) {
       setDone(true)
-      // Persist completion (best-effort). Server awards XP/streak/coins.
       if (course && sectionId) {
         api
           .completeLesson({
@@ -84,7 +85,6 @@ export default function Lesson() {
     setDone(false)
   }
 
-  // ---- Completion summary ----
   if (done) {
     const accuracy = Math.round((correct / total) * 100)
     const xp = 20 + correct * 8
@@ -96,24 +96,13 @@ export default function Lesson() {
           </div>
           <h1 className="mt-4 text-2xl font-extrabold text-fg-strong">Lesson complete!</h1>
           <p className="mt-1 text-sm text-fg-muted">
-            {course.level} · {SECTION_META[sectionId].name}
+            {course.level} - {SECTION_META[sectionId].name}
           </p>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <div className="rounded-xl bg-bg-soft p-3">
-              <p className="text-xl font-extrabold text-fg-strong">+{xp}</p>
-              <p className="text-[11px] text-fg-faint">XP</p>
-            </div>
-            <div className="rounded-xl bg-bg-soft p-3">
-              <p className="text-xl font-extrabold text-fg-strong">{accuracy}%</p>
-              <p className="text-[11px] text-fg-faint">Accuracy</p>
-            </div>
-            <div className="rounded-xl bg-bg-soft p-3">
-              <p className="text-xl font-extrabold text-fg-strong">
-                {correct}/{total}
-              </p>
-              <p className="text-[11px] text-fg-faint">Correct</p>
-            </div>
+            <SummaryStat label="XP" value={`+${xp}`} />
+            <SummaryStat label="Accuracy" value={`${accuracy}%`} />
+            <SummaryStat label="Correct" value={`${correct}/${total}`} />
           </div>
 
           <div className="mt-6 flex gap-2">
@@ -133,7 +122,6 @@ export default function Lesson() {
 
   return (
     <div className="mx-auto max-w-2xl animate-fade-up">
-      {/* Header: close + progress */}
       <div className="mb-5 flex items-center gap-3">
         <button
           aria-label="Exit lesson"
@@ -148,10 +136,27 @@ export default function Lesson() {
         </span>
       </div>
 
+      <div className="mb-4 space-y-3">
+        <div>
+          <h1 className="text-lg font-extrabold text-fg-strong">
+            {course.level} - {lessonTitle(course.level, sectionId, lessonIndex)}
+          </h1>
+          <p className="text-sm text-fg-muted">{lessonDescription(course.level, sectionId, lessonIndex)}</p>
+        </div>
+
+        {(lessonDef?.mission || lessonDef?.canDo) && (
+          <div className="grid gap-2 rounded-2xl border border-line bg-bg-card p-3 sm:grid-cols-2">
+            {lessonDef.mission && <ContextBlock label="Mission" value={lessonDef.mission} />}
+            {lessonDef.canDo && <ContextBlock label="Can-do" value={lessonDef.canDo} />}
+          </div>
+        )}
+      </div>
+
       <Card className="p-6 sm:p-8">
-        <Badge tone="brand" className="mb-4">
-          {SECTION_META[sectionId].name}
-        </Badge>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge tone="brand">{SECTION_META[sectionId].name}</Badge>
+          <Badge tone="neutral">Step {step + 1}</Badge>
+        </div>
 
         {item.kind === 'vocab' && <VocabCard item={item} revealed={revealed} />}
         {item.kind === 'kanji' && <KanjiCard item={item} revealed={revealed} />}
@@ -159,7 +164,6 @@ export default function Lesson() {
         {item.kind === 'quiz' && <QuizCard item={item} picked={picked} onPick={setPicked} />}
       </Card>
 
-      {/* Controls */}
       <div className="mt-5">
         {!isQuiz && !revealed ? (
           <Button className="w-full" size="lg" onClick={() => setRevealed(true)}>
@@ -189,7 +193,33 @@ export default function Lesson() {
   )
 }
 
-// --- Card variants -----------------------------------------------------------
+function SummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-bg-soft p-3">
+      <p className="text-xl font-extrabold text-fg-strong">{value}</p>
+      <p className="text-[11px] text-fg-faint">{label}</p>
+    </div>
+  )
+}
+
+function ContextBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-bg-soft p-3">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-fg-faint">{label}</p>
+      <p className="mt-1 text-sm leading-snug text-fg">{value}</p>
+    </div>
+  )
+}
+
+function DetailTile({ label, value }: { label: string; value?: string | number }) {
+  if (!value) return null
+  return (
+    <div className="rounded-xl bg-bg-soft p-3">
+      <dt className="text-[11px] font-bold uppercase tracking-wide text-fg-faint">{label}</dt>
+      <dd className="mt-1 font-jp text-sm text-fg-strong">{value}</dd>
+    </div>
+  )
+}
 
 function VocabCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'vocab' }>; revealed: boolean }) {
   return (
@@ -199,6 +229,12 @@ function VocabCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'vocab
         <SpeakButton text={item.front} label={item.reading} icon />
       </div>
       <p className="mt-2 text-sm text-fg-faint">{item.reading}</p>
+
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {item.partOfSpeech && <Badge tone="neutral">{item.partOfSpeech}</Badge>}
+        {item.pitch && <Badge tone="amber">Pitch {item.pitch}</Badge>}
+      </div>
+
       {revealed && (
         <div className="mt-6 animate-fade-up border-t border-line pt-6">
           <p className="text-2xl font-bold text-accent-fg">{item.meaning}</p>
@@ -220,30 +256,29 @@ function KanjiCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'kanji
         <p className="font-jp text-7xl font-bold text-fg-strong sm:text-8xl">{item.char}</p>
         <SpeakButton text={item.char} icon />
       </div>
+
       {revealed && (
         <div className="mt-6 animate-fade-up border-t border-line pt-6 text-left">
           <p className="text-center text-xl font-bold text-accent-fg">{item.meaning}</p>
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl bg-bg-soft p-3">
-              <dt className="text-[11px] uppercase tracking-wide text-fg-faint">On&apos;yomi</dt>
-              <dd className="font-jp text-fg-strong">{item.on}</dd>
-            </div>
-            <div className="rounded-xl bg-bg-soft p-3">
-              <dt className="text-[11px] uppercase tracking-wide text-fg-faint">Kun&apos;yomi</dt>
-              <dd className="font-jp text-fg-strong">{item.kun}</dd>
-            </div>
-            <div className="rounded-xl bg-bg-soft p-3">
-              <dt className="text-[11px] uppercase tracking-wide text-fg-faint">Strokes</dt>
-              <dd className="text-fg-strong">{item.strokes}</dd>
-            </div>
+            <DetailTile label="On'yomi" value={item.on} />
+            <DetailTile label="Kun'yomi" value={item.kun} />
+            <DetailTile label="Strokes" value={item.strokes} />
             <div className="flex items-center justify-between rounded-xl bg-bg-soft p-3">
               <div>
-                <dt className="text-[11px] uppercase tracking-wide text-fg-faint">Example</dt>
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-fg-faint">Example</dt>
                 <dd className="font-jp text-fg-strong">{item.example}</dd>
               </div>
               <SpeakButton text={item.example} icon />
             </div>
           </dl>
+
+          {item.mnemonic && (
+            <div className="mt-4 rounded-xl bg-accent/10 p-3 text-sm text-fg">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-accent-fg">Mnemonic</p>
+              <p className="mt-1">{item.mnemonic}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -262,7 +297,13 @@ function GrammarCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'gra
             <p className="font-jp text-lg text-fg">{item.example}</p>
             <SpeakButton text={item.example} icon />
           </div>
-          <p className="mt-1 text-sm text-fg-muted">{item.exampleEn}</p>
+          <p className="mt-1 text-center text-sm text-fg-muted">{item.exampleEn}</p>
+          {item.note && (
+            <div className="mt-4 rounded-xl bg-amber/10 p-3 text-sm text-fg">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-amber">Note</p>
+              <p className="mt-1">{item.note}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -281,8 +322,21 @@ function QuizCard({
   const answered = picked !== null
   return (
     <div>
+      {item.skill && (
+        <Badge
+          tone={item.skill === 'listening' ? 'sakura' : item.skill === 'reading' ? 'matcha' : 'brand'}
+          className="mb-3 capitalize"
+        >
+          {item.skill}
+        </Badge>
+      )}
       {item.passage && (
-        <p className="mb-4 rounded-xl bg-bg-soft p-4 font-jp text-base leading-relaxed text-fg">{item.passage}</p>
+        <div className="mb-4 rounded-xl bg-bg-soft p-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="font-jp text-base leading-relaxed text-fg">{item.passage}</p>
+            {item.skill === 'listening' && <SpeakButton text={item.passage} icon />}
+          </div>
+        </div>
       )}
       <p className="text-base font-semibold text-fg-strong">{item.prompt}</p>
 
@@ -314,7 +368,7 @@ function QuizCard({
       {answered && (
         <p className="mt-4 animate-fade-up rounded-xl bg-bg-soft p-3 text-sm text-fg-muted">
           <span className={cn('font-semibold', picked === item.answer ? 'text-matcha' : 'text-coral')}>
-            {picked === item.answer ? 'Correct! ' : 'Not quite. '}
+            {picked === item.answer ? 'Correct. ' : 'Not quite. '}
           </span>
           {item.explain}
         </p>

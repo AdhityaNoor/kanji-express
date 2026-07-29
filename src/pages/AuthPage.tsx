@@ -12,7 +12,7 @@ export default function AuthPage() {
   const { user, login, signup } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from || '/'
+  const from = (location.state as { from?: string } | null)?.from || '/dashboard'
 
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')

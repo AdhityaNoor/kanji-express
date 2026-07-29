@@ -2,10 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ObjectId } from 'mongodb'
 import { users } from '../_lib/mongodb'
 import { getUserId } from '../_lib/auth'
-import { sendJson, methodNotAllowed, readBody, JLPT_LEVELS } from '../_lib/http'
+import { sendJson, methodNotAllowed, readBody } from '../_lib/http'
 import { applyCompletion, toPublicUser } from '../_lib/user'
 
-const SECTIONS = ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
+const LEVELS = ['STARTER', 'N5', 'N4', 'N3', 'N2', 'N1']
+const SECTIONS = ['orientation', 'kana', 'phrases', 'sentences', 'study', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST'])
@@ -20,8 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const total = Number(body.total)
   const correct = Number(body.correct)
 
-  if (!JLPT_LEVELS.includes(level as (typeof JLPT_LEVELS)[number]))
-    return sendJson(res, 400, { error: 'Invalid level.' })
+  if (!LEVELS.includes(level)) return sendJson(res, 400, { error: 'Invalid level.' })
   if (!SECTIONS.includes(section)) return sendJson(res, 400, { error: 'Invalid section.' })
   if (!Number.isInteger(lessonIndex) || lessonIndex < 0)
     return sendJson(res, 400, { error: 'Invalid lesson index.' })

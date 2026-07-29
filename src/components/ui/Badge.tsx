@@ -1,4 +1,5 @@
-import { type HTMLAttributes } from 'react'
+import { Chip } from '@heroui/react'
+import { type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 type Tone = 'brand' | 'matcha' | 'amber' | 'coral' | 'sakura' | 'neutral'
@@ -12,19 +13,25 @@ const tones: Record<Tone, string> = {
   neutral: 'bg-fg/10 text-fg-muted ring-line',
 }
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps {
   tone?: Tone
+  className?: string
+  children?: ReactNode
 }
 
-export function Badge({ tone = 'neutral', className, ...props }: BadgeProps) {
+/** Small status pill, built on HeroUI's Chip. */
+export function Badge({ tone = 'neutral', className, children }: BadgeProps) {
   return (
-    <span
+    <Chip
+      size="sm"
+      variant="soft"
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset',
+        'inline-flex h-auto items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset',
         tones[tone],
         className,
       )}
-      {...props}
-    />
+    >
+      {children}
+    </Chip>
   )
 }

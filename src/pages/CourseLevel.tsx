@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Lock, Check, Play, ChevronRight, Star } from 'lucide-react'
+import { ArrowLeft, Lock, Check, Play, ChevronRight, Star, Target, Route } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -10,7 +10,7 @@ import {
   getLevel,
   buildLessons,
   SECTION_META,
-  SECTION_LESSON_COUNTS,
+  lessonCount,
   type SectionId,
   type Lesson,
 } from '@/data/courses'
@@ -31,9 +31,9 @@ export default function CourseLevel() {
     return (
       <div className="animate-fade-up">
         <Card className="p-10 text-center">
-          <p className="text-sm text-fg-muted">That level doesn&apos;t exist.</p>
+          <p className="text-sm text-fg-muted">That level does not exist.</p>
           <Link to="/courses" className="mt-3 inline-block text-sm font-semibold text-accent-fg">
-            ← Back to courses
+            Back to courses
           </Link>
         </Card>
       </div>
@@ -54,7 +54,7 @@ export default function CourseLevel() {
           <h1 className="text-xl font-bold text-fg-strong">{course.level} is locked</h1>
           <p className="max-w-sm text-sm text-fg-muted">{unlockHint(course.level)}</p>
           <Link to="/courses" className="mt-1 text-sm font-semibold text-accent-fg">
-            ← Back to courses
+            Back to courses
           </Link>
         </Card>
       </div>
@@ -63,12 +63,12 @@ export default function CourseLevel() {
 
   const activeSection = selected
   const lessons: Lesson[] = activeSection ? buildLessons(course, activeSection, completed) : []
+  const currentLesson = lessons.find((lesson) => lesson.status === 'current') ?? lessons.find((lesson) => lesson.status !== 'done')
 
   return (
     <div className="animate-fade-up space-y-6">
       <BackLink />
 
-      {/* Header */}
       <Card className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
         <div className="flex items-center gap-4">
           <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-2xl font-extrabold text-accent-on">
@@ -89,7 +89,27 @@ export default function CourseLevel() {
         </div>
       </Card>
 
-      {/* Section selector */}
+      {currentLesson ? (
+        <Card className="border-accent/25 bg-accent/[0.04] p-4 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-on">
+              <Route className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wide text-accent-fg">Next mission</p>
+              <h2 className="mt-1 text-lg font-extrabold text-fg-strong">{currentLesson.title}</h2>
+              <p className="mt-1 text-sm text-fg-muted">{currentLesson.mission ?? currentLesson.description}</p>
+            </div>
+            <Link
+              to={currentLesson.href}
+              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-bold text-accent-on shadow-glow"
+            >
+              Continue <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </Card>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {course.sections.map((s) => {
           const Icon = SECTION_ICON[s.id]
@@ -121,7 +141,7 @@ export default function CourseLevel() {
               </div>
               <p className="mt-3 text-sm font-semibold text-fg-strong">{s.name}</p>
               <p className="text-xs text-fg-faint">
-                {done}/{SECTION_LESSON_COUNTS[s.id]} lessons
+                {done}/{lessonCount(course.level, s.id)} lessons
               </p>
               <ProgressBar className="mt-2" height="h-1.5" value={p} barClassName={finished ? 'bg-matcha' : 'bg-accent'} />
             </button>
@@ -129,7 +149,6 @@ export default function CourseLevel() {
         })}
       </div>
 
-      {/* Lessons for the selected section */}
       {activeSection ? (
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-5">
@@ -138,7 +157,7 @@ export default function CourseLevel() {
               <p className="text-xs text-fg-muted">{SECTION_META[activeSection].blurb}</p>
             </div>
             <Badge tone="brand">
-              {sectionDone(course.level, activeSection, completed)}/{SECTION_LESSON_COUNTS[activeSection]}
+              {sectionDone(course.level, activeSection, completed)}/{lessonCount(course.level, activeSection)}
             </Badge>
           </div>
 
@@ -172,30 +191,39 @@ function LessonRow({ lesson }: { lesson: Lesson }) {
     <li>
       <Link
         to={lesson.href}
-        className="flex items-center gap-3 p-3 transition-colors hover:bg-bg-hover sm:px-5"
+        className="flex flex-col gap-3 p-4 transition-colors hover:bg-bg-hover sm:flex-row sm:items-center sm:px-5"
       >
         <div className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold', STATUS_BADGE[lesson.status])}>
           {lesson.status === 'done' ? <Check className="h-5 w-5" /> : lesson.index}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-fg-strong">{lesson.title}</p>
-          <p className="truncate text-xs text-fg-faint">
-            {lesson.itemCount} items · +{lesson.xp} XP
-            {lesson.accuracy !== undefined ? ` · ${lesson.accuracy}%` : ''}
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-fg-strong">{lesson.title}</p>
+            {lesson.canDo ? (
+              <Badge tone="neutral" className="max-w-full">
+                <Target className="h-3 w-3" /> Can-do
+              </Badge>
+            ) : null}
+          </div>
+          <p className="mt-1 text-xs text-fg-muted">{lesson.mission ?? lesson.description}</p>
+          {lesson.canDo ? <p className="mt-1 text-xs text-fg-faint">{lesson.canDo}</p> : null}
+          <p className="mt-1 text-[11px] text-fg-faint">
+            {lesson.itemCount} items - +{lesson.xp} XP
+            {lesson.accuracy !== undefined ? ` - ${lesson.accuracy}%` : ''}
           </p>
         </div>
 
         {lesson.status === 'done' ? (
-          <span className="flex items-center gap-1 text-xs font-medium text-matcha">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-matcha sm:ml-auto">
             <Star className="h-3.5 w-3.5 fill-current" /> Review
           </span>
         ) : lesson.status === 'current' ? (
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-on">
-            <Play className="h-3.5 w-3.5" /> {/* first incomplete */} Continue
+          <span className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-on sm:ml-auto">
+            <Play className="h-3.5 w-3.5" /> Continue
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-fg">
+          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-fg sm:ml-auto">
             Start <ChevronRight className="h-3.5 w-3.5" />
           </span>
         )}

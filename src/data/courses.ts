@@ -1,76 +1,130 @@
 // ---------------------------------------------------------------------------
-// Course structure for the JLPT modules (N5–N1). This file is now pure
-// curriculum metadata — how many lessons each section has and what they're
-// called. All *progress* (what's done, %, unlock state) is derived from the
-// signed-in user's saved data in src/lib/progress.ts. Nothing here is
-// per-user or hardcoded to look "completed".
+// Course structure.
+//
+// STARTER is the lightweight onboarding track before JLPT study. N5-N1 keep the
+// exam-oriented sections. User progress, completion percentage, and unlock
+// state are derived from src/lib/progress.ts.
 // ---------------------------------------------------------------------------
 
-export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
+import { LESSON_DEFS } from './content'
 
-export type SectionId = 'vocab' | 'kanji' | 'grammar' | 'listening' | 'reading' | 'tests'
+export type CourseLevelId = 'STARTER' | 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
+export type JlptLevel = CourseLevelId
+
+export type StarterSectionId = 'orientation' | 'kana' | 'phrases' | 'sentences' | 'study'
+export type JlptSectionId = 'vocab' | 'kanji' | 'grammar' | 'listening' | 'reading' | 'tests'
+export type SectionId = StarterSectionId | JlptSectionId
 
 export interface CourseSection {
   id: SectionId
   name: string
-  /** total lessons available in this section */
   lessons: number
 }
 
 export interface CourseLevel {
-  level: JlptLevel
+  level: CourseLevelId
   title: string
   blurb: string
   accentKana: string
   sections: CourseSection[]
+  kind: 'starter' | 'jlpt'
 }
 
-export const SECTION_ORDER: SectionId[] = ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
+export const STARTER_LEVEL: CourseLevelId = 'STARTER'
+export const JLPT_LEVELS: CourseLevelId[] = ['N5', 'N4', 'N3', 'N2', 'N1']
+
+export const STARTER_SECTION_ORDER: StarterSectionId[] = ['orientation', 'kana', 'phrases', 'sentences', 'study']
+export const JLPT_SECTION_ORDER: JlptSectionId[] = ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
+export const SECTION_ORDER: SectionId[] = [...STARTER_SECTION_ORDER, ...JLPT_SECTION_ORDER]
 
 export const SECTION_META: Record<SectionId, { name: string; blurb: string }> = {
-  vocab: { name: 'Vocabulary', blurb: 'Core words with audio, pitch accent & examples' },
-  kanji: { name: 'Kanji', blurb: 'Readings, radicals, stroke order & mnemonics' },
+  orientation: { name: 'Boarding Pass', blurb: 'How Japanese works and how Kanji Express teaches' },
+  kana: { name: 'Kana Sprint', blurb: 'Fast hiragana and katakana recognition before kanji load' },
+  phrases: { name: 'Survival Phrases', blurb: 'Useful expressions you can use immediately' },
+  sentences: { name: 'Sentence Signals', blurb: 'Tiny patterns that make Japanese grammar less abstract' },
+  study: { name: 'Review System', blurb: 'How SRS, mistakes, and daily sessions work' },
+  vocab: { name: 'Vocabulary', blurb: 'Core words with audio, pitch accent, and examples' },
+  kanji: { name: 'Kanji', blurb: 'Readings, radicals, stroke order, and mnemonics' },
   grammar: { name: 'Grammar', blurb: 'Patterns, nuance, and common mistakes' },
   listening: { name: 'Listening', blurb: 'Dialogues and comprehension drills' },
   reading: { name: 'Reading', blurb: 'Passages with graded difficulty' },
-  tests: { name: 'Practice Tests', blurb: 'Timed sections & full mock exams' },
+  tests: { name: 'Practice Tests', blurb: 'Timed sections and full mock exams' },
 }
 
-const LESSON_TITLES: Record<SectionId, string[]> = {
-  vocab: ['Daily life', 'Time & dates', 'Around town', 'Feelings', 'Work & study', 'Travel', 'Food & cooking', 'Nature'],
-  kanji: ['People & family', 'Numbers & counters', 'Nature radicals', 'Movement verbs', 'Body & health', 'City & places', 'Time kanji', 'Abstract concepts'],
-  grammar: ['Particles review', 'Te-form patterns', 'Conditionals', 'Passive & causative', 'Keigo basics', 'Comparisons', 'Expressing intent', 'Nuance & tone'],
-  listening: ['Short dialogues', 'Announcements', 'Phone calls', 'Directions', 'Interviews', 'Fast speech', 'Note-taking', 'Mock listening'],
-  reading: ['Signs & notices', 'Short emails', 'Blog posts', 'News headlines', 'Instructions', 'Opinion pieces', 'Charts & tables', 'Long passage'],
-  tests: ['Vocab section', 'Grammar section', 'Reading section', 'Listening section', 'Half mock', 'Full mock A', 'Full mock B', 'Weakness retest'],
+export function levelSections(level: CourseLevelId): SectionId[] {
+  return level === STARTER_LEVEL ? STARTER_SECTION_ORDER : JLPT_SECTION_ORDER
 }
 
-/** Number of lessons available in each section (kept in sync with LESSON_TITLES). */
-export const SECTION_LESSON_COUNTS: Record<SectionId, number> = Object.fromEntries(
-  SECTION_ORDER.map((id) => [id, LESSON_TITLES[id].length]),
-) as Record<SectionId, number>
-
-export function lessonTitle(section: SectionId, index: number): string {
-  return LESSON_TITLES[section][index] ?? `Lesson ${index + 1}`
+export function lessonCount(level: CourseLevelId, section: SectionId): number {
+  return LESSON_DEFS[level][section]?.length ?? 0
 }
 
-function sectionsFor(): CourseSection[] {
-  return SECTION_ORDER.map((id) => ({ id, name: SECTION_META[id].name, lessons: SECTION_LESSON_COUNTS[id] }))
+export function lessonTitle(level: CourseLevelId, section: SectionId, index: number): string {
+  return LESSON_DEFS[level][section]?.[index]?.title ?? `Lesson ${index + 1}`
+}
+
+export function lessonDescription(level: CourseLevelId, section: SectionId, index: number): string {
+  return LESSON_DEFS[level][section]?.[index]?.description ?? ''
+}
+
+function sectionsFor(level: CourseLevelId): CourseSection[] {
+  return levelSections(level).map((id) => ({ id, name: SECTION_META[id].name, lessons: lessonCount(level, id) }))
 }
 
 export const COURSE_LEVELS: CourseLevel[] = [
-  { level: 'N5', title: 'Foundations', blurb: 'Hiragana, katakana, and your first 100 kanji.', accentKana: 'ご', sections: sectionsFor() },
-  { level: 'N4', title: 'Everyday Japanese', blurb: 'Casual speech, more verbs, and 300 kanji.', accentKana: 'し', sections: sectionsFor() },
-  { level: 'N3', title: 'The Bridge', blurb: 'The jump to intermediate — nuance and speed.', accentKana: 'ちゅう', sections: sectionsFor() },
-  { level: 'N2', title: 'Fluency', blurb: 'Newspapers, workplace Japanese, and abstract topics.', accentKana: 'じょう', sections: sectionsFor() },
-  { level: 'N1', title: 'Mastery', blurb: 'Literary, technical, and native-level material.', accentKana: 'たつ', sections: sectionsFor() },
+  {
+    level: 'STARTER',
+    title: 'Express Starter',
+    blurb: 'A lightweight launch track: scripts, survival phrases, sentence signals, and study habits.',
+    accentKana: '始',
+    sections: sectionsFor('STARTER'),
+    kind: 'starter',
+  },
+  {
+    level: 'N5',
+    title: 'Survival Foundations',
+    blurb: 'Kana, greetings, numbers, time, places, and your first 100 kanji.',
+    accentKana: 'ご',
+    sections: sectionsFor('N5'),
+    kind: 'jlpt',
+  },
+  {
+    level: 'N4',
+    title: 'Everyday Autonomy',
+    blurb: 'Plans, reasons, routine tasks, and daily-life comprehension.',
+    accentKana: 'し',
+    sections: sectionsFor('N4'),
+    kind: 'jlpt',
+  },
+  {
+    level: 'N3',
+    title: 'The Bridge',
+    blurb: 'Intermediate nuance, near-natural listening, and practical reading.',
+    accentKana: '中',
+    sections: sectionsFor('N3'),
+    kind: 'jlpt',
+  },
+  {
+    level: 'N2',
+    title: 'Independent Fluency',
+    blurb: 'Workplace, news, essays, and abstract everyday topics.',
+    accentKana: '上',
+    sections: sectionsFor('N2'),
+    kind: 'jlpt',
+  },
+  {
+    level: 'N1',
+    title: 'Advanced Mastery',
+    blurb: 'Dense argument, literary forms, register, and native-speed material.',
+    accentKana: '達',
+    sections: sectionsFor('N1'),
+    kind: 'jlpt',
+  },
 ]
 
 export function getLevel(level: string): CourseLevel | undefined {
   return COURSE_LEVELS.find((l) => l.level.toLowerCase() === level.toLowerCase())
 }
-
-// --- Lessons -----------------------------------------------------------------
 
 export type LessonStatus = 'done' | 'current' | 'available'
 
@@ -78,38 +132,33 @@ export interface Lesson {
   id: string
   index: number
   title: string
+  description: string
+  mission?: string
+  canDo?: string
   subtitle: string
   xp: number
   status: LessonStatus
   itemCount: number
   section: SectionId
-  /** route to the lesson player */
   href: string
-  /** best accuracy recorded (0-100), if completed */
   accuracy?: number
 }
 
 export type CompletedLessons = Record<string, { correct: number; total: number; xp: number; at: string }>
 
-export function lessonKey(level: JlptLevel, section: SectionId, index: number): string {
+export function lessonKey(level: CourseLevelId, section: SectionId, index: number): string {
   return `${level}-${section}-${index}`
 }
 
-/**
- * Build a lesson list for a section with statuses derived from the user's
- * completed-lessons map. The first not-yet-completed lesson is "current";
- * later lessons are "available" (nothing is artificially locked inside a
- * section the user can already reach).
- */
 export function buildLessons(
   level: CourseLevel,
   sectionId: SectionId,
   completed: CompletedLessons,
 ): Lesson[] {
-  const titles = LESSON_TITLES[sectionId]
+  const defs = LESSON_DEFS[level.level][sectionId] ?? []
   let currentAssigned = false
 
-  return titles.map((title, i) => {
+  return defs.map((def, i) => {
     const key = lessonKey(level.level, sectionId, i)
     const record = completed[key]
     let status: LessonStatus
@@ -125,11 +174,14 @@ export function buildLessons(
     return {
       id: key,
       index: i + 1,
-      title,
+      title: def.title,
+      description: def.description,
+      mission: def.mission,
+      canDo: def.canDo,
       subtitle: SECTION_META[sectionId].name,
       xp: 20 + i * 5,
       status,
-      itemCount: 8 + ((i * 3) % 10),
+      itemCount: def.items.length,
       section: sectionId,
       href: `/courses/${level.level.toLowerCase()}/${sectionId}/${i}`,
       accuracy: record ? Math.round((record.correct / record.total) * 100) : undefined,

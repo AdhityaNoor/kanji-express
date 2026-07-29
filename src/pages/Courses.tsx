@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Lock, ChevronRight, Check } from 'lucide-react'
+import { Lock, ChevronRight, Check, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -9,7 +9,7 @@ import { COURSE_LEVELS } from '@/data/courses'
 import {
   levelOverall,
   isLevelUnlocked,
-  unlockHint,
+  unlockHintForLevel,
   activeLevel,
   sectionPct,
   type Completed,
@@ -25,13 +25,12 @@ export default function Courses() {
   return (
     <div className="animate-fade-up space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-fg-strong sm:text-3xl">JLPT Courses</h1>
+        <h1 className="text-2xl font-extrabold text-fg-strong sm:text-3xl">Learning Route</h1>
         <p className="mt-1 text-sm text-fg-muted">
-          Five levels, six sections each. Later levels unlock as you progress.
+          Start with a lightweight Express Starter, then move into JLPT N5-N1.
         </p>
       </div>
 
-      {/* Continue banner */}
       {active ? (
         <Card className="flex flex-col gap-4 bg-accent/[0.06] p-5 sm:flex-row sm:items-center">
           <RingProgress value={levelOverall(active, completed)} size={72} stroke={8}>
@@ -42,7 +41,7 @@ export default function Courses() {
               {levelOverall(active, completed) > 0 ? 'Continue learning' : 'Start here'}
             </p>
             <p className="truncate text-lg font-bold text-fg-strong">
-              {active.level} · {active.title}
+              {active.level === 'STARTER' ? active.title : `${active.level} - ${active.title}`}
             </p>
             <p className="truncate text-sm text-fg-muted">{active.blurb}</p>
           </div>
@@ -55,7 +54,6 @@ export default function Courses() {
         </Card>
       ) : null}
 
-      {/* Level grid */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {COURSE_LEVELS.map((lvl) => {
           const overall = levelOverall(lvl, completed)
@@ -76,11 +74,11 @@ export default function Courses() {
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      'grid h-12 w-12 place-items-center rounded-xl text-lg font-extrabold',
+                      'grid h-12 min-w-12 place-items-center rounded-xl px-2 text-lg font-extrabold',
                       unlocked ? 'bg-accent text-accent-on' : 'bg-bg-hover text-fg-faint',
                     )}
                   >
-                    {lvl.level}
+                    {lvl.level === 'STARTER' ? <Sparkles className="h-5 w-5" /> : lvl.level}
                   </div>
                   <div>
                     <p className="font-bold text-fg-strong">{lvl.title}</p>
@@ -89,7 +87,7 @@ export default function Courses() {
                         <Check className="h-3 w-3" /> Complete
                       </Badge>
                     ) : unlocked ? (
-                      <Badge tone="brand">{overall}% done</Badge>
+                      <Badge tone={lvl.kind === 'starter' ? 'sakura' : 'brand'}>{overall}% done</Badge>
                     ) : (
                       <Badge tone="neutral">
                         <Lock className="h-3 w-3" /> Locked
@@ -109,10 +107,9 @@ export default function Courses() {
               {unlocked ? (
                 <ProgressBar className="mt-4" value={overall} barClassName={complete ? 'bg-matcha' : 'bg-accent'} />
               ) : (
-                <p className="mt-4 text-xs font-medium text-fg-faint">{unlockHint(lvl.level)}</p>
+                <p className="mt-4 text-xs font-medium text-fg-faint">{unlockHintForLevel(lvl.level, completed)}</p>
               )}
 
-              {/* section icons */}
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {lvl.sections.map((s) => {
                   const Icon = SECTION_ICON[s.id]
@@ -121,7 +118,7 @@ export default function Courses() {
                   return (
                     <span
                       key={s.id}
-                      title={`${s.name} · ${sPct}%`}
+                      title={`${s.name} - ${sPct}%`}
                       className={cn(
                         'grid h-8 w-8 place-items-center rounded-lg ring-1 ring-inset ring-line',
                         !unlocked

@@ -1,12 +1,77 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@heroui/react/styles";
+
+/* Our class-based dark mode variant (html gets .light / .dark). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Theme tokens. Colors are stored as space-separated RGB channels so Tailwind
-   can apply <alpha-value> (e.g. bg-accent/10). :root is the dark theme; the
-   `.light` class on <html> switches to material white with black accents.
+   Design tokens exposed to Tailwind v4. Colors are stored as space-separated
+   RGB channels (in :root / .light below) so opacity modifiers work; here we map
+   them to Tailwind color utilities (bg-bg, text-fg, bg-accent, etc.).
 --------------------------------------------------------------------------- */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", sans-serif;
+
+  --color-bg: rgb(var(--bg));
+  --color-bg-soft: rgb(var(--bg-soft));
+  --color-bg-card: rgb(var(--bg-card));
+  --color-bg-hover: rgb(var(--bg-hover));
+  --color-line: rgb(var(--line));
+
+  --color-fg: rgb(var(--fg));
+  --color-fg-strong: rgb(var(--fg-strong));
+  --color-fg-muted: rgb(var(--muted));
+  --color-fg-faint: rgb(var(--faint));
+
+  --color-accent: rgb(var(--accent));
+  --color-accent-strong: rgb(var(--accent-strong));
+  --color-accent-fg: rgb(var(--accent-fg));
+  --color-accent-on: rgb(var(--on-accent));
+
+  --color-heat-1: rgb(var(--heat-1));
+  --color-heat-2: rgb(var(--heat-2));
+  --color-heat-3: rgb(var(--heat-3));
+  --color-heat-4: rgb(var(--heat-4));
+
+  --color-sakura: #ff6b9d;
+  --color-matcha: #2fd67f;
+  --color-amber: #ffb020;
+  --color-coral: #ff6a5a;
+
+  --radius-xl: 0.9rem;
+  --radius-2xl: 1.25rem;
+
+  --shadow-card: 0 1px 2px rgb(var(--shadow) / 0.22), 0 10px 30px rgb(var(--shadow) / 0.14);
+  --shadow-glow: 0 0 0 1px rgb(var(--accent) / 0.30), 0 8px 30px rgb(var(--accent) / 0.20);
+
+  --animate-fade-up: fade-up 0.4s ease-out both;
+  --animate-pop: pop 0.25s ease-out both;
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --- Theme values (RGB channels). :root = dark; .light overrides. --------- */
 :root {
   color-scheme: dark;
 
@@ -81,7 +146,8 @@ body,
 }
 
 body {
-  @apply bg-bg text-fg font-sans antialiased;
+  @apply bg-bg text-fg antialiased;
+  font-family: var(--font-sans);
   /* safe-area padding for notched / foldable devices */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);

@@ -1,41 +1,54 @@
-import { type ButtonHTMLAttributes, forwardRef } from 'react'
+import { Button as HButton } from '@heroui/react'
+import { type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 type Variant = 'primary' | 'ghost' | 'outline'
 type Size = 'sm' | 'md' | 'lg'
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps {
   variant?: Variant
   size?: Size
+  className?: string
+  children?: ReactNode
+  onClick?: () => void
+  disabled?: boolean
+  type?: 'button' | 'submit' | 'reset'
+  isIconOnly?: boolean
+  'aria-label'?: string
 }
 
-const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-on hover:bg-accent-strong shadow-glow',
-  ghost: 'text-fg hover:bg-bg-hover',
-  outline: 'border border-line text-fg hover:bg-bg-hover',
+// Map our variants onto HeroUI's, applying our accent via className (HeroUI
+// merges classes with tailwind-merge, so these win over its defaults).
+const VARIANT: Record<Variant, { heroui: 'primary' | 'ghost' | 'outline'; className: string }> = {
+  primary: { heroui: 'primary', className: 'bg-accent text-accent-on hover:bg-accent-strong shadow-glow' },
+  ghost: { heroui: 'ghost', className: 'text-fg hover:bg-bg-hover' },
+  outline: { heroui: 'outline', className: 'border-line text-fg hover:bg-bg-hover' },
 }
 
-const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-11 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className,
+  children,
+  onClick,
+  disabled,
+  type,
+  isIconOnly,
+  'aria-label': ariaLabel,
+}: ButtonProps) {
+  const v = VARIANT[variant]
+  return (
+    <HButton
+      variant={v.heroui}
+      size={size}
+      type={type}
+      isDisabled={disabled}
+      isIconOnly={isIconOnly}
+      onPress={onClick}
+      aria-label={ariaLabel}
+      className={cn('rounded-xl font-semibold', v.className, className)}
+    >
+      {children}
+    </HButton>
+  )
 }
-
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', ...props }, ref) => (
-    <button
-      ref={ref}
-      className={cn(
-        'inline-flex select-none items-center justify-center gap-2 rounded-xl font-semibold',
-        'transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2',
-        'focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50',
-        'min-h-[44px]', // touch target
-        variants[variant],
-        sizes[size],
-        className,
-      )}
-      {...props}
-    />
-  ),
-)
-Button.displayName = 'Button'
