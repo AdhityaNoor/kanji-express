@@ -11,6 +11,7 @@ import { getLessonDef, getLessonItems, type StudyItem } from '@/data/content'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { primaryJapaneseReading } from '@/lib/japaneseSpeech'
 
 export default function Lesson() {
   const { level = '', section = '', lesson = '0' } = useParams()
@@ -91,6 +92,7 @@ export default function Lesson() {
     return (
       <div className="mx-auto max-w-md animate-fade-up">
         <Card className="p-8 text-center">
+          <div className="ke-watermark -right-5 -top-8 text-[7rem]">完</div>
           <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent/10 text-accent-fg animate-pop">
             <Trophy className="h-10 w-10" />
           </div>
@@ -153,6 +155,7 @@ export default function Lesson() {
       </div>
 
       <Card className="p-6 sm:p-8">
+        <div className="ke-watermark -right-5 -top-8 text-[7rem]">練</div>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <Badge tone="brand">{SECTION_META[sectionId].name}</Badge>
           <Badge tone="neutral">Step {step + 1}</Badge>
@@ -161,11 +164,16 @@ export default function Lesson() {
         {item.kind === 'vocab' && <VocabCard item={item} revealed={revealed} />}
         {item.kind === 'kanji' && <KanjiCard item={item} revealed={revealed} />}
         {item.kind === 'grammar' && <GrammarCard item={item} revealed={revealed} />}
+        {item.kind === 'info' && <InfoCard item={item} />}
         {item.kind === 'quiz' && <QuizCard item={item} picked={picked} onPick={setPicked} />}
       </Card>
 
       <div className="mt-5">
-        {!isQuiz && !revealed ? (
+        {item.kind === 'info' ? (
+          <Button className="w-full" size="lg" onClick={() => advance(true)}>
+            Continue <ChevronRight className="h-4 w-4" />
+          </Button>
+        ) : !isQuiz && !revealed ? (
           <Button className="w-full" size="lg" onClick={() => setRevealed(true)}>
             Reveal answer
           </Button>
@@ -195,7 +203,7 @@ export default function Lesson() {
 
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-bg-soft p-3">
+    <div className="rounded-xl bg-bg-soft p-3 ring-1 ring-inset ring-line/60">
       <p className="text-xl font-extrabold text-fg-strong">{value}</p>
       <p className="text-[11px] text-fg-faint">{label}</p>
     </div>
@@ -204,19 +212,22 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
 
 function ContextBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-bg-soft p-3">
+    <div className="rounded-xl bg-bg-soft p-3 ring-1 ring-inset ring-line/60">
       <p className="text-[11px] font-bold uppercase tracking-wide text-fg-faint">{label}</p>
       <p className="mt-1 text-sm leading-snug text-fg">{value}</p>
     </div>
   )
 }
 
-function DetailTile({ label, value }: { label: string; value?: string | number }) {
+function DetailTile({ label, value, speakText }: { label: string; value?: string | number; speakText?: string }) {
   if (!value) return null
   return (
     <div className="rounded-xl bg-bg-soft p-3">
       <dt className="text-[11px] font-bold uppercase tracking-wide text-fg-faint">{label}</dt>
-      <dd className="mt-1 font-jp text-sm text-fg-strong">{value}</dd>
+      <dd className="mt-1 flex items-center gap-1.5 font-jp text-sm text-fg-strong">
+        <span>{value}</span>
+        {speakText && <SpeakButton text={String(value)} pronunciation={speakText} icon className="h-7 w-7" />}
+      </dd>
     </div>
   )
 }
@@ -226,7 +237,7 @@ function VocabCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'vocab
     <div className="text-center">
       <div className="flex items-center justify-center gap-2">
         <p className="font-jp text-5xl font-bold text-fg-strong sm:text-6xl">{item.front}</p>
-        <SpeakButton text={item.front} label={item.reading} icon />
+        <SpeakButton text={item.front} pronunciation={primaryJapaneseReading(item.reading)} label={item.reading} icon />
       </div>
       <p className="mt-2 text-sm text-fg-faint">{item.reading}</p>
 
@@ -249,20 +260,41 @@ function VocabCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'vocab
   )
 }
 
+function InfoCard({ item }: { item: Extract<StudyItem, { kind: 'info' }> }) {
+  return (
+    <article>
+      <h2 className="text-2xl font-extrabold text-fg-strong">{item.title}</h2>
+      <p className="mt-3 text-sm leading-6 text-fg-muted">{item.body}</p>
+      <ul className="mt-5 space-y-3">
+        {item.bullets.map((bullet) => (
+          <li key={bullet} className="flex gap-3 rounded-xl bg-bg-soft p-3 text-sm leading-6 text-fg ring-1 ring-inset ring-line/60">
+            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-accent" />
+            <span>{bullet}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+  )
+}
+
 function KanjiCard({ item, revealed }: { item: Extract<StudyItem, { kind: 'kanji' }>; revealed: boolean }) {
+  const onReading = primaryJapaneseReading(item.on)
+  const kunReading = primaryJapaneseReading(item.kun)
+  const mainReading = kunReading || onReading
+
   return (
     <div className="text-center">
       <div className="flex items-center justify-center gap-3">
         <p className="font-jp text-7xl font-bold text-fg-strong sm:text-8xl">{item.char}</p>
-        <SpeakButton text={item.char} icon />
+        <SpeakButton text={item.char} pronunciation={mainReading} icon />
       </div>
 
       {revealed && (
         <div className="mt-6 animate-fade-up border-t border-line pt-6 text-left">
           <p className="text-center text-xl font-bold text-accent-fg">{item.meaning}</p>
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <DetailTile label="On'yomi" value={item.on} />
-            <DetailTile label="Kun'yomi" value={item.kun} />
+            <DetailTile label="On'yomi" value={item.on} speakText={onReading} />
+            <DetailTile label="Kun'yomi" value={item.kun} speakText={kunReading} />
             <DetailTile label="Strokes" value={item.strokes} />
             <div className="flex items-center justify-between rounded-xl bg-bg-soft p-3">
               <div>
@@ -331,7 +363,7 @@ function QuizCard({
         </Badge>
       )}
       {item.passage && (
-        <div className="mb-4 rounded-xl bg-bg-soft p-4">
+        <div className="mb-4 rounded-xl bg-bg-soft p-4 ring-1 ring-inset ring-line/60">
           <div className="flex items-start justify-between gap-3">
             <p className="font-jp text-base leading-relaxed text-fg">{item.passage}</p>
             {item.skill === 'listening' && <SpeakButton text={item.passage} icon />}
@@ -350,14 +382,19 @@ function QuizCard({
               disabled={answered}
               onClick={() => onPick(i)}
               className={cn(
-                'flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-sm transition-colors',
+                'flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-sm transition-all',
                 !answered && 'border-line bg-bg-soft hover:bg-bg-hover',
                 answered && isAnswer && 'border-matcha/50 bg-matcha/10 text-fg-strong',
                 answered && isPicked && !isAnswer && 'border-coral/50 bg-coral/10 text-fg-strong',
                 answered && !isAnswer && !isPicked && 'border-line bg-bg-soft opacity-60',
               )}
             >
-              <span className="font-jp">{choice}</span>
+              <span className="flex items-center gap-3">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-bg-card text-xs font-extrabold text-fg-muted">
+                  {i + 1}
+                </span>
+                <span className="font-jp">{choice}</span>
+              </span>
               {answered && isAnswer && <Check className="h-4 w-4 text-matcha" />}
               {answered && isPicked && !isAnswer && <X className="h-4 w-4 text-coral" />}
             </button>

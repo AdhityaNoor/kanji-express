@@ -12,7 +12,7 @@ export type CourseLevelId = 'STARTER' | 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
 export type JlptLevel = CourseLevelId
 
 export type StarterSectionId = 'orientation' | 'kana' | 'phrases' | 'sentences' | 'study'
-export type JlptSectionId = 'vocab' | 'kanji' | 'grammar' | 'listening' | 'reading' | 'tests'
+export type JlptSectionId = 'overview' | 'vocab' | 'kanji' | 'grammar' | 'listening' | 'reading' | 'tests'
 export type SectionId = StarterSectionId | JlptSectionId
 
 export interface CourseSection {
@@ -34,7 +34,7 @@ export const STARTER_LEVEL: CourseLevelId = 'STARTER'
 export const JLPT_LEVELS: CourseLevelId[] = ['N5', 'N4', 'N3', 'N2', 'N1']
 
 export const STARTER_SECTION_ORDER: StarterSectionId[] = ['orientation', 'kana', 'phrases', 'sentences', 'study']
-export const JLPT_SECTION_ORDER: JlptSectionId[] = ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
+export const JLPT_SECTION_ORDER: JlptSectionId[] = ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
 export const SECTION_ORDER: SectionId[] = [...STARTER_SECTION_ORDER, ...JLPT_SECTION_ORDER]
 
 export const SECTION_META: Record<SectionId, { name: string; blurb: string }> = {
@@ -43,6 +43,7 @@ export const SECTION_META: Record<SectionId, { name: string; blurb: string }> = 
   phrases: { name: 'Survival Phrases', blurb: 'Useful expressions you can use immediately' },
   sentences: { name: 'Sentence Signals', blurb: 'Tiny patterns that make Japanese grammar less abstract' },
   study: { name: 'Review System', blurb: 'How SRS, mistakes, and daily sessions work' },
+  overview: { name: 'Level Overview', blurb: 'Scope, outcomes, study strategy, and handover into this JLPT level' },
   vocab: { name: 'Vocabulary', blurb: 'Core words with audio, pitch accent, and examples' },
   kanji: { name: 'Kanji', blurb: 'Readings, radicals, stroke order, and mnemonics' },
   grammar: { name: 'Grammar', blurb: 'Patterns, nuance, and common mistakes' },

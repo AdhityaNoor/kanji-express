@@ -10,8 +10,9 @@
    them to Tailwind color utilities (bg-bg, text-fg, bg-accent, etc.).
 --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-jp: "Noto Sans JP", sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", "Plus Jakarta Sans", sans-serif;
+  --font-display: "Shippori Mincho", "Noto Sans JP", serif;
 
   --color-bg: rgb(var(--bg));
   --color-bg-soft: rgb(var(--bg-soft));
@@ -42,8 +43,8 @@
   --radius-xl: 0.9rem;
   --radius-2xl: 1.25rem;
 
-  --shadow-card: 0 1px 2px rgb(var(--shadow) / 0.22), 0 10px 30px rgb(var(--shadow) / 0.14);
-  --shadow-glow: 0 0 0 1px rgb(var(--accent) / 0.30), 0 8px 30px rgb(var(--accent) / 0.20);
+  --shadow-card: 0 1px 2px rgb(var(--shadow) / 0.14), 0 16px 36px rgb(var(--shadow) / 0.12);
+  --shadow-glow: 0 0 0 1px rgb(var(--accent) / 0.24), 0 12px 30px rgb(var(--accent) / 0.20);
 
   --animate-fade-up: fade-up 0.4s ease-out both;
   --animate-pop: pop 0.25s ease-out both;
@@ -86,10 +87,10 @@
   --muted: 148 163 184;
   --faint: 100 116 139;
 
-  --accent: 51 85 255;
-  --accent-strong: 90 125 255;
-  --accent-fg: 142 171 255;
-  --on-accent: 255 255 255;
+  --accent: 255 255 255;
+  --accent-strong: 236 232 224;
+  --accent-fg: 255 255 255;
+  --on-accent: 18 17 15;
 
   --heat-1: 26 42 115;
   --heat-2: 24 45 180;
@@ -134,8 +135,24 @@
 
 @layer components {
   .ke-input {
-    @apply h-11 w-full rounded-xl border border-line bg-bg-soft px-3 text-sm text-fg;
+    @apply h-11 w-full rounded-xl border border-line bg-bg-soft/90 px-3 text-sm font-medium text-fg shadow-inner;
     @apply placeholder:text-fg-faint focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+
+  .ke-panel {
+    @apply relative overflow-hidden rounded-2xl border border-line bg-bg-card/92 shadow-card backdrop-blur-sm;
+  }
+
+  .ke-pressable {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/35 hover:shadow-glow;
+  }
+
+  .ke-section-label {
+    @apply text-xs font-extrabold uppercase tracking-[0.12em] text-fg-muted;
+  }
+
+  .ke-watermark {
+    @apply pointer-events-none absolute select-none font-display font-bold leading-none text-fg-strong/[0.045];
   }
 }
 
@@ -148,6 +165,9 @@ body,
 body {
   @apply bg-bg text-fg antialiased;
   font-family: var(--font-sans);
+  background-image:
+    linear-gradient(135deg, rgb(var(--bg-soft) / 0.26) 0 1px, transparent 1px 20px),
+    linear-gradient(180deg, rgb(var(--accent) / 0.06), transparent 32rem);
   /* safe-area padding for notched / foldable devices */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);

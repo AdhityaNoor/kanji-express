@@ -61,11 +61,12 @@ export default function Landing() {
           className="absolute inset-0 h-full w-full object-cover"
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-black/25" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" aria-hidden="true" />
 
         <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-base font-black text-black">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white font-display text-base font-black text-black shadow-lg">
               快
             </span>
             <span className="text-sm font-extrabold tracking-wide text-white">Kanji Express</span>
@@ -115,7 +116,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-bg-card">
+      <section className="border-y border-line bg-bg-card/90 backdrop-blur">
         <div className="mx-auto grid max-w-7xl gap-3 px-4 py-5 sm:grid-cols-3 sm:px-6 lg:px-8">
           <Metric icon={Target} label="Route" value="Starter to N1" />
           <Metric icon={BookOpenCheck} label="Focus" value="JLPT + real use" />
@@ -133,7 +134,7 @@ export default function Landing() {
 
         <div className="mt-8 grid gap-3 md:grid-cols-2">
           {standout.map((item) => (
-            <article key={item.title} className="rounded-2xl border border-line bg-bg-card p-5 shadow-card">
+            <article key={item.title} className="rounded-2xl border border-line bg-bg-card/90 p-5 shadow-card transition-transform hover:-translate-y-0.5">
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent/10 text-accent-fg">
                 <item.icon className="h-5 w-5" />
               </div>
@@ -144,7 +145,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="bg-bg-soft">
+      <section className="bg-bg-soft/70">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
           <div>
             <p className="text-sm font-bold uppercase tracking-wide text-accent-fg">The learning route</p>
@@ -156,7 +157,7 @@ export default function Landing() {
 
           <div className="grid gap-2">
             {route.map(([name, body], index) => (
-              <div key={name} className="flex items-center gap-3 rounded-2xl border border-line bg-bg-card p-4">
+              <div key={name} className="flex items-center gap-3 rounded-2xl border border-line bg-bg-card/90 p-4 shadow-card">
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-sm font-black text-accent-on">
                   {index + 1}
                 </div>
@@ -178,7 +179,7 @@ export default function Landing() {
       </section>
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 rounded-2xl border border-line bg-bg-card p-6 shadow-card sm:flex-row sm:items-center">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 rounded-2xl border border-line bg-bg-card/90 p-6 shadow-card sm:flex-row sm:items-center">
           <div>
             <h2 className="text-2xl font-black text-fg-strong">Start with the Starter track.</h2>
             <p className="mt-1 text-sm text-fg-muted">Build momentum before the JLPT route begins.</p>

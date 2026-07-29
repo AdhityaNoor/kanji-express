@@ -16,6 +16,7 @@ export interface Grade {
   score: number
   precision: number
   coverage: number
+  order: number
   strokes: number
   expectedStrokes: number
 }
@@ -24,17 +25,27 @@ interface KanjiCanvasProps {
   char: string
   expectedStrokes: number
   onGraded?: (g: Grade) => void
+  showGuideDefault?: boolean
+  allowGuideToggle?: boolean
+  showStrokeReference?: boolean
 }
 
 const RASTER = 224
 
-export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProps) {
+export function KanjiCanvas({
+  char,
+  expectedStrokes,
+  onGraded,
+  showGuideDefault = true,
+  allowGuideToggle = true,
+  showStrokeReference = true,
+}: KanjiCanvasProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const strokesRef = useRef<Stroke[]>([])
   const currentRef = useRef<Stroke | null>(null)
   const [strokeCount, setStrokeCount] = useState(0)
-  const [showGuide, setShowGuide] = useState(true)
+  const [showGuide, setShowGuide] = useState(showGuideDefault)
   const [grade, setGrade] = useState<Grade | null>(null)
 
   // Stroke-order reference: prefer KanjiVG (loaded at runtime), fall back to the
@@ -86,9 +97,10 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
     currentRef.current = null
     setStrokeCount(0)
     setGrade(null)
+    setShowGuide(showGuideDefault)
     redraw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [char])
+  }, [char, showGuideDefault])
 
   // --- drawing ---------------------------------------------------------------
   function ctx() {
@@ -202,15 +214,8 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
     if (strokesRef.current.length === 0) return
     await document.fonts.load(`${Math.round(RASTER * 0.8)}px "Noto Sans JP"`).catch(() => undefined)
 
-    // target glyph mask
-    const target = maskFromDraw((c) => {
-      c.fillStyle = '#000'
-      c.textAlign = 'center'
-      c.textBaseline = 'middle'
-      c.font = `${Math.round(RASTER * 0.8)}px "Noto Sans JP"`
-      c.fillText(char, RASTER / 2, RASTER / 2 + RASTER * 0.03)
-    })
-    // user ink (thin) and coverage (thick)
+    const target = targetMask(char, strokeData?.paths, strokeData?.viewBox, RASTER * 0.08)
+    const targetLoose = targetMask(char, strokeData?.paths, strokeData?.viewBox, RASTER * 0.16)
     const thin = maskFromDraw((c) => rasterStrokes(c, strokesRef.current, RASTER * 0.03))
     const thick = maskFromDraw((c) => rasterStrokes(c, strokesRef.current, RASTER * 0.13))
 
@@ -223,16 +228,17 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
       if (t) tArea++
       if (thin[i]) {
         uArea++
-        if (t) precisionHit++
+        if (targetLoose[i]) precisionHit++
       }
       if (t && thick[i]) coverageHit++
     }
     const precision = uArea ? precisionHit / uArea : 0
     const coverage = tArea ? coverageHit / tArea : 0
     const strokeMatch = 1 - Math.min(1, Math.abs(strokesRef.current.length - expectedStrokes) / expectedStrokes)
-    const score = Math.round(100 * (0.45 * precision + 0.45 * coverage + 0.1 * strokeMatch))
+    const order = estimateStrokeOrder(strokesRef.current, strokeData?.paths, strokeData?.viewBox)
+    const score = Math.round(100 * (0.35 * precision + 0.35 * coverage + 0.2 * order + 0.1 * strokeMatch))
 
-    const g: Grade = { score, precision, coverage, strokes: strokesRef.current.length, expectedStrokes }
+    const g: Grade = { score, precision, coverage, order, strokes: strokesRef.current.length, expectedStrokes }
     setGrade(g)
     onGraded?.(g)
   }
@@ -259,7 +265,7 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
         )}
 
         {/* reference stroke-order overlay */}
-        {strokeData && <StrokeOrder paths={strokeData.paths} viewBox={strokeData.viewBox} />}
+        {showStrokeReference && strokeData && <StrokeReferenceOverlay paths={strokeData.paths} viewBox={strokeData.viewBox} />}
 
         <canvas
           ref={canvasRef}
@@ -283,9 +289,11 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
         <Button variant="outline" size="sm" onClick={replay} disabled={strokeCount === 0}>
           <Play className="h-4 w-4" /> Replay
         </Button>
-        <Button variant={showGuide ? 'ghost' : 'outline'} size="sm" onClick={() => setShowGuide((s) => !s)}>
-          <PenLine className="h-4 w-4" /> {showGuide ? 'Hide guide' : 'Show guide'}
-        </Button>
+        {allowGuideToggle && (
+          <Button variant={showGuide ? 'ghost' : 'outline'} size="sm" onClick={() => setShowGuide((s) => !s)}>
+            <PenLine className="h-4 w-4" /> {showGuide ? 'Hide guide' : 'Show guide'}
+          </Button>
+        )}
         <Button size="sm" onClick={grade_} disabled={strokeCount === 0}>
           <Sparkles className="h-4 w-4" /> Grade
         </Button>
@@ -302,7 +310,8 @@ export function KanjiCanvas({ char, expectedStrokes, onGraded }: KanjiCanvasProp
               {grade.score}% match
             </Badge>
             <span className="text-xs text-fg-faint">
-              neatness {Math.round(grade.precision * 100)}% · coverage {Math.round(grade.coverage * 100)}%
+              order {Math.round(grade.order * 100)}% · neatness {Math.round(grade.precision * 100)}% · coverage{' '}
+              {Math.round(grade.coverage * 100)}%
             </span>
           </>
         )}
@@ -363,48 +372,93 @@ function rasterStrokes(c: CanvasRenderingContext2D, strokes: Stroke[], width: nu
   }
 }
 
-/** Animated stroke-order reference (numbers appear, strokes draw in sequence). */
-function StrokeOrder({ paths, viewBox }: { paths: string[]; viewBox: number }) {
-  const [playing, setPlaying] = useState(false)
-  const [visible, setVisible] = useState(0)
+function targetMask(char: string, paths: string[] | undefined, viewBox: number | undefined, width: number): Uint8Array {
+  if (paths?.length && viewBox) {
+    return maskFromDraw((c) => rasterPaths(c, paths, viewBox, width))
+  }
 
-  const play = useCallback(() => {
-    setPlaying(true)
-    setVisible(0)
-    let i = 0
-    const tick = () => {
-      i += 1
-      setVisible(i)
-      if (i < paths.length) window.setTimeout(tick, 650)
-      else window.setTimeout(() => setPlaying(false), 500)
+  return maskFromDraw((c) => {
+    c.fillStyle = '#000'
+    c.textAlign = 'center'
+    c.textBaseline = 'middle'
+    c.font = `${Math.round(RASTER * 0.8)}px "Noto Sans JP"`
+    c.fillText(char, RASTER / 2, RASTER / 2 + RASTER * 0.03)
+  })
+}
+
+function rasterPaths(c: CanvasRenderingContext2D, paths: string[], viewBox: number, width: number) {
+  const scale = RASTER / viewBox
+  c.save()
+  c.scale(scale, scale)
+  c.strokeStyle = '#000'
+  c.lineCap = 'round'
+  c.lineJoin = 'round'
+  c.lineWidth = width / scale
+  for (const d of paths) c.stroke(new Path2D(d))
+  c.restore()
+}
+
+function estimateStrokeOrder(strokes: Stroke[], paths?: string[], viewBox = 100): number {
+  if (!paths?.length) return strokes.length ? 0.75 : 0
+  const paired = Math.min(strokes.length, paths.length)
+  if (paired === 0) return 0
+
+  let total = 0
+  for (let i = 0; i < paired; i++) {
+    const user = strokes[i]
+    const start = user[0]
+    const end = user[user.length - 1] ?? start
+    const ref = pathEndpoints(paths[i], viewBox)
+    if (!start || !end || !ref) continue
+
+    const startDist = distance(start, ref.start)
+    const endDist = distance(end, ref.end)
+    const reversedStartDist = distance(start, ref.end)
+    const reversedEndDist = distance(end, ref.start)
+    const forward = Math.max(0, 1 - (startDist + endDist) / 0.75)
+    const reversed = Math.max(0, 1 - (reversedStartDist + reversedEndDist) / 0.75) * 0.55
+    total += Math.max(forward, reversed)
+  }
+
+  const missingPenalty = 1 - Math.min(1, Math.abs(strokes.length - paths.length) / paths.length)
+  return Math.max(0, Math.min(1, (total / paths.length) * missingPenalty))
+}
+
+function pathEndpoints(d: string, viewBox: number): { start: Point; end: Point } | null {
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  path.setAttribute('d', d)
+  try {
+    const length = path.getTotalLength()
+    const start = path.getPointAtLength(0)
+    const end = path.getPointAtLength(length)
+    return {
+      start: { x: start.x / viewBox, y: start.y / viewBox, p: 1 },
+      end: { x: end.x / viewBox, y: end.y / viewBox, p: 1 },
     }
-    window.setTimeout(tick, 300)
-  }, [paths.length])
+  } catch {
+    return null
+  }
+}
 
+function distance(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y)
+}
+
+function StrokeReferenceOverlay({ paths, viewBox }: { paths: string[]; viewBox: number }) {
   return (
-    <>
-      <svg viewBox={`0 0 ${viewBox} ${viewBox}`} className="pointer-events-none absolute inset-0 h-full w-full">
-        {paths.map((d, i) => (
-          <path
-            key={i}
-            d={d}
-            fill="none"
-            stroke="rgb(var(--accent-fg))"
-            strokeWidth={viewBox > 100 ? 3.5 : 4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="transition-opacity duration-300"
-            style={{ opacity: playing ? (i < visible ? 0.55 : 0) : 0.16 }}
-          />
-        ))}
-      </svg>
-      <button
-        type="button"
-        onClick={play}
-        className="absolute bottom-2 right-2 rounded-lg bg-bg-soft/90 px-2.5 py-1 text-xs font-semibold text-accent-fg ring-1 ring-inset ring-line backdrop-blur hover:bg-bg-hover"
-      >
-        ▶ Stroke order
-      </button>
-    </>
+    <svg viewBox={`0 0 ${viewBox} ${viewBox}`} className="pointer-events-none absolute inset-0 h-full w-full">
+      {paths.map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fill="none"
+          stroke="rgb(var(--accent-fg))"
+          strokeWidth={viewBox > 100 ? 3.5 : 4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ opacity: 0.16 }}
+        />
+      ))}
+    </svg>
   )
 }

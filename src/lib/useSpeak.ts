@@ -45,7 +45,7 @@ export function useSpeak() {
   }, [browserSupported])
 
   const speakBrowser = useCallback(
-    (text: string, rate = 0.95) => {
+    (text: string, rate = 0.92) => {
       if (!browserSupported) return
       window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(text)
@@ -82,10 +82,11 @@ export function useSpeak() {
   )
 
   const speak = useCallback(
-    (text: string) => {
-      if (!text) return
-      if (SERVER_MODE) void speakServer(text)
-      else speakBrowser(text)
+    (text: string, options?: { pronunciation?: string; rate?: number }) => {
+      const spokenText = (options?.pronunciation || text).trim()
+      if (!spokenText) return
+      if (SERVER_MODE) void speakServer(spokenText)
+      else speakBrowser(spokenText, options?.rate)
     },
     [speakBrowser, speakServer],
   )

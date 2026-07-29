@@ -6,7 +6,7 @@ import { sendJson, methodNotAllowed, readBody } from '../_lib/http'
 import { applyCompletion, toPublicUser } from '../_lib/user'
 
 const LEVELS = ['STARTER', 'N5', 'N4', 'N3', 'N2', 'N1']
-const SECTIONS = ['orientation', 'kana', 'phrases', 'sentences', 'study', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
+const SECTIONS = ['orientation', 'kana', 'phrases', 'sentences', 'study', 'overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST'])

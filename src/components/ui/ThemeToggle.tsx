@@ -1,3 +1,4 @@
+import { Button } from '@heroui/react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/cn'
@@ -7,19 +8,20 @@ export function ThemeToggle({ className }: { className?: string }) {
   const isDark = theme === 'dark'
 
   return (
-    <button
+    <Button
       type="button"
-      onClick={toggle}
+      onPress={toggle}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={isDark ? 'Light mode' : 'Dark mode'}
+      isIconOnly
+      variant="ghost"
       className={cn(
-        'grid h-10 w-10 place-items-center rounded-xl text-fg-muted transition-colors',
-        'hover:bg-bg-hover hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+        'h-10 min-w-10 text-fg-muted transition-colors',
+        'hover:bg-bg-hover hover:text-fg data-[hover=true]:bg-bg-hover data-[hover=true]:text-fg',
         className,
       )}
     >
       <Sun className={cn('h-5 w-5 transition-all', isDark ? 'hidden' : 'block')} />
       <Moon className={cn('h-5 w-5 transition-all', isDark ? 'block' : 'hidden')} />
-    </button>
+    </Button>
   )
 }

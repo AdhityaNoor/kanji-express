@@ -15,10 +15,13 @@ export function ProgressBar({ value, className, barClassName, height = 'h-2' }: 
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={cn('w-full overflow-hidden rounded-full bg-bg-hover', height, className)}
+      className={cn('w-full overflow-hidden rounded-full bg-bg-hover shadow-inner', height, className)}
     >
       <div
-        className={cn('h-full rounded-full bg-accent transition-[width] duration-700 ease-out', barClassName)}
+        className={cn(
+          'h-full rounded-full bg-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.28)] transition-[width] duration-700 ease-out',
+          barClassName,
+        )}
         style={{ width: `${clamped}%` }}
       />
     </div>

@@ -1,5 +1,17 @@
 import { Link } from 'react-router-dom'
-import { Flame, Zap, Coins, BookOpenCheck, Target, ChevronRight, Play, AlertTriangle, Sparkles } from 'lucide-react'
+import {
+  Flame,
+  Zap,
+  Coins,
+  BookOpenCheck,
+  Target,
+  ChevronRight,
+  Play,
+  AlertTriangle,
+  Sparkles,
+  Clock3,
+  GraduationCap,
+} from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -65,18 +77,41 @@ export default function Dashboard() {
   return (
     <div className="animate-fade-up space-y-6">
       {/* Greeting */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm text-fg-muted">おかえり、また会えて嬉しいです 👋</p>
-          <h1 className="text-2xl font-extrabold text-fg-strong sm:text-3xl">
-            Welcome back, {user?.name ?? 'there'}
-          </h1>
+      <div className="ke-panel p-5 sm:p-6">
+        <div className="ke-watermark -right-4 -top-8 text-[9rem]">学</div>
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="font-display text-base font-bold text-accent-fg">おかえり、また会えて嬉しいです</p>
+            <h1 className="mt-1 text-2xl font-extrabold text-fg-strong sm:text-3xl">
+              Welcome back, {user?.name ?? 'there'}
+            </h1>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge tone="brand">
+                <GraduationCap className="h-3 w-3" /> Target {target}
+              </Badge>
+              <Badge tone="amber">
+                <Clock3 className="h-3 w-3" /> {xpToday}/{DAILY_XP_GOAL} XP today
+              </Badge>
+              <Badge tone="matcha">
+                <BookOpenCheck className="h-3 w-3" /> {lessonsToday} lesson{lessonsToday === 1 ? '' : 's'}
+              </Badge>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-[13rem] rounded-xl bg-bg-soft/80 p-3 ring-1 ring-inset ring-line">
+              <div className="mb-1 flex items-center justify-between text-xs font-semibold text-fg-muted">
+                <span>Daily route</span>
+                <span>{goalPct}%</span>
+              </div>
+              <ProgressBar value={goalPct} height="h-2.5" />
+            </div>
+            <Link to={startHref}>
+              <Button size="md" className="w-full shrink-0 sm:w-auto">
+                <Play className="h-4 w-4" /> {lessonsToday > 0 ? 'Keep going' : "Start today's session"}
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Link to={startHref}>
-          <Button size="md" className="shrink-0">
-            <Play className="h-4 w-4" /> {lessonsToday > 0 ? 'Keep going' : "Start today's session"}
-          </Button>
-        </Link>
       </div>
 
       {/* Top stat chips */}
@@ -104,12 +139,12 @@ export default function Dashboard() {
               </div>
             </RingProgress>
             <div className="grid w-full grid-cols-2 gap-3 text-center">
-              <div className="rounded-xl bg-bg-soft p-3">
+            <div className="rounded-xl bg-bg-soft p-3 ring-1 ring-inset ring-line/60">
                 <p className="text-lg font-bold text-fg-strong">{lessonsToday}</p>
                 <p className="text-[11px] text-fg-faint">Lessons today</p>
               </div>
-              <div className="rounded-xl bg-bg-soft p-3">
-                <p className="text-lg font-bold text-fg-strong">{p?.streak ?? 0}🔥</p>
+              <div className="rounded-xl bg-bg-soft p-3 ring-1 ring-inset ring-line/60">
+                <p className="text-lg font-bold text-fg-strong">{p?.streak ?? 0}</p>
                 <p className="text-[11px] text-fg-faint">Day streak</p>
               </div>
             </div>
@@ -134,7 +169,7 @@ export default function Dashboard() {
                   <Link
                     key={lesson.id}
                     to={lesson.href}
-                    className="flex items-center gap-3 rounded-xl border border-line bg-bg-soft p-3 transition-colors hover:bg-bg-hover"
+                    className="group flex items-center gap-3 rounded-xl border border-line bg-bg-soft p-3 transition-all hover:-translate-y-0.5 hover:border-accent/35 hover:bg-bg-hover"
                   >
                     <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent-fg">
                       <Icon className="h-5 w-5" />
@@ -145,7 +180,7 @@ export default function Dashboard() {
                         {active?.level} · {lesson.subtitle} · +{lesson.xp} XP
                       </p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-fg-faint" />
+                    <ChevronRight className="h-4 w-4 text-fg-faint transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 )
               })

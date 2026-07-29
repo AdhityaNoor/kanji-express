@@ -10,6 +10,7 @@ import {
   MessageCircle,
   ListTree,
   Repeat,
+  Map,
   type LucideIcon,
 } from 'lucide-react'
 import type { SectionId } from '@/data/courses'
@@ -20,6 +21,7 @@ export const SECTION_ICON: Record<SectionId, LucideIcon> = {
   phrases: MessageCircle,
   sentences: ListTree,
   study: Repeat,
+  overview: Map,
   vocab: BookOpen,
   kanji: PenLine,
   grammar: FileText,

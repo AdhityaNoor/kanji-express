@@ -50,12 +50,18 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-3xl animate-fade-up space-y-6">
-      <h1 className="text-2xl font-extrabold text-fg-strong sm:text-3xl">Profile</h1>
+      <div className="ke-panel p-5 sm:p-6">
+        <div className="ke-watermark -right-4 -top-8 text-[8rem]">私</div>
+        <div className="relative">
+          <p className="ke-section-label">Learner profile</p>
+          <h1 className="mt-2 text-2xl font-extrabold text-fg-strong sm:text-3xl">Profile</h1>
+        </div>
+      </div>
 
       {/* Identity card */}
       <Card>
         <CardBody className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
-          <img src={user.avatar} alt={user.name} className="h-20 w-20 rounded-2xl ring-2 ring-line" />
+          <img src={user.avatar} alt={user.name} className="h-20 w-20 rounded-2xl ring-2 ring-line shadow-card" />
           <div className="min-w-0 flex-1">
             {editing ? (
               <div className="space-y-3">
@@ -72,7 +78,7 @@ export default function Profile() {
                         type="button"
                         onClick={() => setTarget(l)}
                         className={
-                          'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ' +
+                          'rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ' +
                           (target === l ? 'bg-accent text-accent-on' : 'bg-bg-soft text-fg-muted hover:text-fg')
                         }
                       >
@@ -115,7 +121,7 @@ export default function Profile() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {stats.map((s) => (
-          <Card key={s.label} className="flex items-center gap-3 p-4">
+          <Card key={s.label} className="flex items-center gap-3 p-4 ke-pressable">
             <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${s.bg} ${s.tone}`}>
               <s.icon className="h-5 w-5" />
             </div>

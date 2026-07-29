@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn'
 
 interface SpeakButtonProps {
   text: string
+  pronunciation?: string
   label?: string
   className?: string
   /** Compact icon-only round button when true. */
@@ -11,14 +12,14 @@ interface SpeakButtonProps {
 }
 
 /** Tappable Japanese pronunciation button. Renders nothing if TTS is unsupported. */
-export function SpeakButton({ text, label, className, icon }: SpeakButtonProps) {
+export function SpeakButton({ text, pronunciation, label, className, icon }: SpeakButtonProps) {
   const { speak, speaking, supported } = useSpeak()
   if (!supported) return null
 
   const handle = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    speak(text)
+    speak(text, { pronunciation })
   }
 
   if (icon) {

@@ -382,3 +382,40 @@ The learning route should be:
 N5 should unlock after Express Starter is complete. Later JLPT levels continue
 to unlock from previous-level progress. This prevents brand-new users from being
 dropped into formal course sections before they understand the study loop.
+
+## JLPT Level Handovers
+
+Each JLPT level must begin with a `Level Overview` section before Vocabulary,
+Kanji, Grammar, Listening, Reading, and Practice Tests. This overview is the
+handover from the previous stage into the next study mode.
+
+Every level overview must include:
+
+- scope: what the level covers and how it differs from the previous level.
+- outcome: what the learner should be able to do by the end.
+- study strategy: what habits matter most for that level.
+- kanji/vocabulary target: the long-term recognition scope for the level.
+- one comprehension check so the overview counts as real progress.
+
+Current target scope:
+
+| Level | Role | Long-term Kanji Target | Long-term Vocabulary Target |
+| --- | --- | ---: | ---: |
+| N5 | Survival foundations | ~100 | ~800 |
+| N4 | Everyday autonomy | ~300 total | ~1,500 total |
+| N3 | Intermediate bridge | ~650 total | ~3,700 total |
+| N2 | Independent fluency | ~1,000 total | ~6,000 total |
+| N1 | Advanced mastery | 2,000+ | 10,000+ |
+
+The current in-app kanji lessons are still curated seeds. They are not yet the
+complete target manifests. The product should treat kanji completion as two
+layers:
+
+1. Course kanji: selected kanji taught in context with words, examples,
+   mnemonics, and sentence use.
+2. Kanji depot / handwriting: full level manifest used for recognition,
+   writing practice, and spaced review.
+
+The next syllabus expansion should generate canonical per-level kanji manifests
+and then map each kanji into lesson units instead of manually placing a few
+example kanji per level.

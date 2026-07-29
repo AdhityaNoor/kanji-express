@@ -70,8 +70,9 @@ export default function CourseLevel() {
       <BackLink />
 
       <Card className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
+        <div className="ke-watermark right-5 top-0 text-[7rem]">{course.accentKana}</div>
         <div className="flex items-center gap-4">
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-2xl font-extrabold text-accent-on">
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-2xl font-extrabold text-accent-on shadow-glow">
             {course.level}
           </div>
           <div>
@@ -125,7 +126,7 @@ export default function CourseLevel() {
                 'rounded-2xl border p-4 text-left transition-all',
                 isActive
                   ? 'border-accent/40 bg-accent/[0.06] ring-1 ring-inset ring-accent/25'
-                  : 'border-line bg-bg-card hover:bg-bg-hover',
+                  : 'border-line bg-bg-card hover:-translate-y-0.5 hover:bg-bg-hover',
               )}
             >
               <div className="flex items-center justify-between">
@@ -139,7 +140,7 @@ export default function CourseLevel() {
                 </div>
                 {finished ? <Check className="h-4 w-4 text-matcha" /> : null}
               </div>
-              <p className="mt-3 text-sm font-semibold text-fg-strong">{s.name}</p>
+              <p className="mt-3 text-sm font-extrabold text-fg-strong">{s.name}</p>
               <p className="text-xs text-fg-faint">
                 {done}/{lessonCount(course.level, s.id)} lessons
               </p>
@@ -191,7 +192,7 @@ function LessonRow({ lesson }: { lesson: Lesson }) {
     <li>
       <Link
         to={lesson.href}
-        className="flex flex-col gap-3 p-4 transition-colors hover:bg-bg-hover sm:flex-row sm:items-center sm:px-5"
+        className="group flex flex-col gap-3 p-4 transition-all hover:bg-bg-hover sm:flex-row sm:items-center sm:px-5"
       >
         <div className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold', STATUS_BADGE[lesson.status])}>
           {lesson.status === 'done' ? <Check className="h-5 w-5" /> : lesson.index}
@@ -219,11 +220,11 @@ function LessonRow({ lesson }: { lesson: Lesson }) {
             <Star className="h-3.5 w-3.5 fill-current" /> Review
           </span>
         ) : lesson.status === 'current' ? (
-          <span className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-on sm:ml-auto">
+          <span className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-on shadow-glow sm:ml-auto">
             <Play className="h-3.5 w-3.5" /> Continue
           </span>
         ) : (
-          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-fg sm:ml-auto">
+          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-fg transition-colors group-hover:border-accent/35 sm:ml-auto">
             Start <ChevronRight className="h-3.5 w-3.5" />
           </span>
         )}

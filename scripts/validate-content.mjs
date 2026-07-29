@@ -10,17 +10,28 @@ const coursesPath = path.join(root, 'src', 'data', 'courses.ts')
 
 const requiredSectionsByLevel = {
   STARTER: ['orientation', 'kana', 'phrases', 'sentences', 'study'],
-  N5: ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
-  N4: ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
-  N3: ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
-  N2: ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
-  N1: ['vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
+  N5: ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
+  N4: ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
+  N3: ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
+  N2: ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
+  N1: ['overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests'],
 }
 const requiredLevels = Object.keys(requiredSectionsByLevel)
+const minimumLessonCounts = {
+  'N5.overview': 4,
+  'N5.vocab': 10,
+  'N5.kanji': 10,
+  'N5.grammar': 10,
+  'N5.listening': 6,
+  'N5.reading': 6,
+  'N5.tests': 4,
+}
 const mojibakePattern = /Ã|Â|â€™|â€œ|â€|ã€|ï¼|ðŸ|�/
 const japanesePattern = /[\u3040-\u30ff\u3400-\u9fff]/
 
 const errors = []
+const resolvedAnswerCounts = new Map()
+let resolvedQuizCount = 0
 
 function readUtf8(file) {
   return fs.readFileSync(file, 'utf8')
@@ -76,6 +87,16 @@ function checkItem(level, section, lessonIndex, itemIndex, item) {
     return
   }
 
+  if (item.kind === 'info') {
+    if (!nonEmpty(item.title)) fail(`${prefix} info is missing title.`)
+    if (!nonEmpty(item.body)) fail(`${prefix} info is missing body.`)
+    if (!Array.isArray(item.bullets) || item.bullets.length === 0) fail(`${prefix} info needs bullets.`)
+    for (const [bulletIndex, bullet] of (item.bullets || []).entries()) {
+      if (!nonEmpty(bullet)) fail(`${prefix} info bullet ${bulletIndex} is empty.`)
+    }
+    return
+  }
+
   if (item.kind === 'kanji') {
     for (const key of ['char', 'on', 'meaning', 'example']) {
       if (!nonEmpty(item[key])) fail(`${prefix} kanji is missing ${key}.`)
@@ -128,8 +149,51 @@ function checkRegistry(lessonDefs) {
         fail(`${level}.${section} needs at least one lesson.`)
         continue
       }
+      const minimumLessonCount = minimumLessonCounts[`${level}.${section}`]
+      if (minimumLessonCount && lessons.length < minimumLessonCount) {
+        fail(`${level}.${section} needs at least ${minimumLessonCount} lessons; found ${lessons.length}.`)
+      }
       lessons.forEach((lesson, lessonIndex) => checkLesson(level, section, lesson, lessonIndex))
     }
+  }
+}
+
+function recordResolvedQuiz(item) {
+  resolvedQuizCount += 1
+  resolvedAnswerCounts.set(item.answer, (resolvedAnswerCounts.get(item.answer) || 0) + 1)
+}
+
+function checkResolvedQuizDistribution(content) {
+  for (const level of requiredLevels) {
+    for (const section of requiredSectionsByLevel[level]) {
+      const lessons = content.LESSON_DEFS[level][section] || []
+      for (let lessonIndex = 0; lessonIndex < lessons.length; lessonIndex += 1) {
+        const items = content.getLessonItems(level, section, lessonIndex)
+        for (const item of items) {
+          if (item.kind !== 'quiz') continue
+          if (!Number.isInteger(item.answer) || item.answer < 0 || item.answer >= item.choices.length) {
+            fail(`${level}.${section}[${lessonIndex}] resolved quiz answer index is invalid.`)
+            continue
+          }
+          recordResolvedQuiz(item)
+        }
+      }
+    }
+  }
+
+  if (resolvedQuizCount === 0) {
+    fail('No resolved quizzes found.')
+    return
+  }
+
+  const firstAnswerCount = resolvedAnswerCounts.get(0) || 0
+  if (firstAnswerCount === resolvedQuizCount) {
+    fail('Resolved quizzes all use the first choice as the correct answer.')
+  }
+
+  const dominantCount = Math.max(...resolvedAnswerCounts.values())
+  if (resolvedQuizCount >= 10 && dominantCount / resolvedQuizCount > 0.7) {
+    fail(`Resolved quiz answers are too concentrated in one position (${dominantCount}/${resolvedQuizCount}).`)
   }
 }
 
@@ -157,6 +221,7 @@ checkRawEncoding(coursesPath)
 
 const content = await loadContentModule()
 checkRegistry(content.LESSON_DEFS)
+checkResolvedQuizDistribution(content)
 
 if (errors.length > 0) {
   console.error(`Content validation failed with ${errors.length} issue(s):`)
@@ -174,4 +239,11 @@ const lessonCount = requiredLevels.reduce(
   0,
 )
 
-console.log(`Content validation passed: ${lessonCount} lessons across Express Starter and ${requiredLevels.length - 1} JLPT levels.`)
+const quizDistribution = [...resolvedAnswerCounts.entries()]
+  .sort(([left], [right]) => left - right)
+  .map(([answer, count]) => `${answer}:${count}`)
+  .join(', ')
+
+console.log(
+  `Content validation passed: ${lessonCount} lessons across Express Starter and ${requiredLevels.length - 1} JLPT levels. Quiz answers ${quizDistribution}.`,
+)

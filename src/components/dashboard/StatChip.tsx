@@ -13,7 +13,7 @@ interface StatChipProps {
 
 export function StatChip({ icon: Icon, label, value, sub, tone = 'text-accent-fg', iconBg = 'bg-accent/10' }: StatChipProps) {
   return (
-    <Card className="flex items-center gap-3 p-3.5 hover:bg-bg-hover sm:p-4">
+    <Card className="flex items-center gap-3 p-3.5 ke-pressable sm:p-4">
       <div className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-xl', iconBg, tone)}>
         <Icon className="h-5 w-5" />
       </div>

@@ -9,6 +9,8 @@ import CourseLevel from '@/pages/CourseLevel'
 import Lesson from '@/pages/Lesson'
 import Profile from '@/pages/Profile'
 import Write from '@/pages/Write'
+import StrokeLab from '@/pages/StrokeLab'
+import KanjiPractice from '@/pages/KanjiPractice'
 import Placeholder from '@/pages/Placeholder'
 import { NAV_ITEMS } from '@/lib/nav'
 
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="courses/:level/:section/:lesson" element={<Lesson />} />
           <Route path="profile" element={<Profile />} />
           <Route path="write" element={<Write />} />
+          <Route path="write/stroke-lab" element={<StrokeLab />} />
+          <Route path="write/kanji-practice" element={<KanjiPractice />} />
           {NAV_ITEMS.filter((i) => !IMPLEMENTED.has(i.to)).map(({ to, label }) => (
             <Route key={to} path={to.slice(1)} element={<Placeholder title={label} />} />
           ))}

@@ -30,6 +30,7 @@ const ITEMS_PER_LESSON: Record<SectionId, number> = {
   phrases: 6,
   sentences: 5,
   study: 3,
+  overview: 4,
   vocab: 8,
   kanji: 6,
   grammar: 5,

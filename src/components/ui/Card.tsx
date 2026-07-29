@@ -7,8 +7,11 @@ import { cn } from '@/lib/cn'
 export function Card({ className, children }: { className?: string; children?: ReactNode }) {
   return (
     <HCard
-      variant="default"
-      className={cn('rounded-2xl border border-line bg-bg-card text-fg shadow-card transition-colors', className)}
+      className={cn(
+        'relative overflow-hidden rounded-2xl border border-line bg-bg-card/92 text-fg shadow-card backdrop-blur-sm transition-colors',
+        'before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-white/35 dark:before:bg-white/10',
+        className,
+      )}
     >
       {children}
     </HCard>
@@ -21,7 +24,7 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-sm font-semibold uppercase tracking-wide text-fg-muted', className)} {...props} />
+    <h3 className={cn('text-xs font-extrabold uppercase tracking-[0.12em] text-fg-muted', className)} {...props} />
   )
 }
 

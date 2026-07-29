@@ -24,15 +24,20 @@ export default function Courses() {
 
   return (
     <div className="animate-fade-up space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-fg-strong sm:text-3xl">Learning Route</h1>
-        <p className="mt-1 text-sm text-fg-muted">
-          Start with a lightweight Express Starter, then move into JLPT N5-N1.
-        </p>
+      <div className="ke-panel p-5 sm:p-6">
+        <div className="ke-watermark -right-3 -top-8 text-[8rem]">道</div>
+        <div className="relative max-w-2xl">
+          <p className="ke-section-label">Learning route</p>
+          <h1 className="mt-2 text-2xl font-extrabold text-fg-strong sm:text-3xl">Starter to JLPT mastery</h1>
+          <p className="mt-2 text-sm leading-6 text-fg-muted">
+            Start with a lightweight Express Starter, then move into JLPT N5-N1 with a clear section rhythm.
+          </p>
+        </div>
       </div>
 
       {active ? (
         <Card className="flex flex-col gap-4 bg-accent/[0.06] p-5 sm:flex-row sm:items-center">
+          <div className="ke-watermark right-4 top-1 text-[5rem]">{active.accentKana}</div>
           <RingProgress value={levelOverall(active, completed)} size={72} stroke={8}>
             <span className="text-sm font-extrabold text-fg-strong">{levelOverall(active, completed)}%</span>
           </RingProgress>
@@ -40,7 +45,7 @@ export default function Courses() {
             <p className="text-xs font-semibold uppercase tracking-wide text-accent-fg">
               {levelOverall(active, completed) > 0 ? 'Continue learning' : 'Start here'}
             </p>
-            <p className="truncate text-lg font-bold text-fg-strong">
+            <p className="truncate text-lg font-extrabold text-fg-strong">
               {active.level === 'STARTER' ? active.title : `${active.level} - ${active.title}`}
             </p>
             <p className="truncate text-sm text-fg-muted">{active.blurb}</p>
@@ -63,7 +68,7 @@ export default function Courses() {
             <Card
               className={cn(
                 'group relative h-full overflow-hidden p-5 transition-all',
-                unlocked ? 'hover:-translate-y-0.5 hover:shadow-glow' : 'opacity-70',
+                unlocked ? 'ke-pressable' : 'opacity-70',
               )}
             >
               <span className="pointer-events-none absolute -right-3 -top-6 select-none font-jp text-[6rem] leading-none text-fg/[0.04]">
@@ -74,7 +79,7 @@ export default function Courses() {
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      'grid h-12 min-w-12 place-items-center rounded-xl px-2 text-lg font-extrabold',
+                      'grid h-12 min-w-12 place-items-center rounded-xl px-2 text-lg font-extrabold shadow-inner',
                       unlocked ? 'bg-accent text-accent-on' : 'bg-bg-hover text-fg-faint',
                     )}
                   >
@@ -102,7 +107,7 @@ export default function Courses() {
                 )}
               </div>
 
-              <p className="mt-3 text-sm text-fg-muted">{lvl.blurb}</p>
+              <p className="mt-3 min-h-10 text-sm leading-5 text-fg-muted">{lvl.blurb}</p>
 
               {unlocked ? (
                 <ProgressBar className="mt-4" value={overall} barClassName={complete ? 'bg-matcha' : 'bg-accent'} />
@@ -110,7 +115,7 @@ export default function Courses() {
                 <p className="mt-4 text-xs font-medium text-fg-faint">{unlockHintForLevel(lvl.level, completed)}</p>
               )}
 
-              <div className="mt-4 flex flex-wrap gap-1.5">
+              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-4">
                 {lvl.sections.map((s) => {
                   const Icon = SECTION_ICON[s.id]
                   const sPct = sectionPct(lvl.level, s.id, completed)

@@ -39,28 +39,38 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="relative grid min-h-screen place-items-center bg-bg px-4">
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-bg px-4">
+      <div
+        className="absolute inset-0 bg-[linear-gradient(120deg,rgb(var(--accent)/0.16),transparent_38%,rgb(var(--bg-soft)/0.62)),linear-gradient(180deg,transparent,rgb(var(--bg)/0.72))]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute left-6 top-14 hidden font-display text-[10rem] font-bold leading-none text-fg-strong/[0.035] lg:block"
+        aria-hidden="true"
+      >
+        日本語
+      </div>
       <div className="absolute right-4 top-4">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-sm animate-fade-up">
+      <div className="relative z-10 w-full max-w-sm animate-fade-up">
         {/* Brand */}
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-accent to-sakura font-jp text-2xl font-bold text-accent-on">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-accent font-display text-2xl font-bold text-accent-on shadow-glow">
             字
           </div>
           <div>
             <h1 className="text-2xl font-extrabold text-fg-strong">Kanji Express</h1>
-            <p className="text-sm text-fg-muted">
+            <p className="text-sm font-medium text-fg-muted">
               {mode === 'login' ? 'Welcome back — continue your streak.' : 'Create an account to start learning.'}
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-line bg-bg-card p-6 shadow-card">
+        <div className="rounded-2xl border border-line bg-bg-card/95 p-6 shadow-card backdrop-blur-md">
           {/* Tabs */}
-          <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-bg-soft p-1">
+          <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-bg-soft p-1 ring-1 ring-inset ring-line">
             {(['login', 'signup'] as Mode[]).map((m) => (
               <button
                 key={m}

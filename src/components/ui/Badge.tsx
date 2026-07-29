@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 type Tone = 'brand' | 'matcha' | 'amber' | 'coral' | 'sakura' | 'neutral'
 
 const tones: Record<Tone, string> = {
-  brand: 'bg-accent/10 text-accent-fg ring-accent/25',
+  brand: 'bg-accent/12 text-accent-fg ring-accent/25',
   matcha: 'bg-matcha/15 text-matcha ring-matcha/30',
   amber: 'bg-amber/15 text-amber ring-amber/30',
   coral: 'bg-coral/15 text-coral ring-coral/30',
@@ -26,7 +26,7 @@ export function Badge({ tone = 'neutral', className, children }: BadgeProps) {
       size="sm"
       variant="soft"
       className={cn(
-        'inline-flex h-auto items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset',
+        'inline-flex h-auto items-center gap-1 px-2.5 py-1 text-xs font-bold ring-1 ring-inset',
         tones[tone],
         className,
       )}
