@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ObjectId } from 'mongodb'
-import { users } from '../_lib/mongodb'
-import { getUserId } from '../_lib/auth'
-import { sendJson, methodNotAllowed, readBody } from '../_lib/http'
-import { applyCompletion, toPublicUser } from '../_lib/user'
+import { users } from '../_lib/mongodb.js'
+import { getUserId } from '../_lib/auth.js'
+import { sendJson, methodNotAllowed, readBody, sendApiError } from '../_lib/http.js'
+import { applyCompletion, toPublicUser } from '../_lib/user.js'
 
 const LEVELS = ['STARTER', 'N5', 'N4', 'N3', 'N2', 'N1']
 const SECTIONS = ['orientation', 'kana', 'phrases', 'sentences', 'study', 'overview', 'vocab', 'kanji', 'grammar', 'listening', 'reading', 'tests']
@@ -13,6 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const userId = getUserId(req)
   if (!userId) return sendJson(res, 401, { error: 'Not authenticated' })
+  if (!ObjectId.isValid(userId)) return sendJson(res, 401, { error: 'Not authenticated' })
 
   const body = readBody(req)
   const level = String(body.level || '').toUpperCase()
@@ -50,7 +51,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     })
   } catch (err) {
-    console.error('progress error', err)
-    return sendJson(res, 500, { error: 'Something went wrong.' })
+    return sendApiError(res, 'progress', err)
   }
 }

@@ -1,8 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { users } from '../_lib/mongodb'
-import { hashPassword, signToken, setAuthCookie } from '../_lib/auth'
-import { sendJson, methodNotAllowed, readBody, validateEmail, validatePassword, validateName } from '../_lib/http'
-import { defaultProgress, defaultAvatar, toPublicUser, type UserDoc } from '../_lib/user'
+import { users } from '../_lib/mongodb.js'
+import { hashPassword, signToken, setAuthCookie } from '../_lib/auth.js'
+import {
+  sendJson,
+  methodNotAllowed,
+  readBody,
+  validateEmail,
+  validatePassword,
+  validateName,
+  sendApiError,
+} from '../_lib/http.js'
+import { defaultProgress, defaultAvatar, toPublicUser, type UserDoc } from '../_lib/user.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST'])
@@ -43,7 +51,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (err && typeof err === 'object' && 'code' in err && (err as { code?: number }).code === 11000) {
       return sendJson(res, 409, { error: 'An account with that email already exists.' })
     }
-    console.error('signup error', err)
-    return sendJson(res, 500, { error: 'Something went wrong. Please try again.' })
+    return sendApiError(res, 'signup', err)
   }
 }

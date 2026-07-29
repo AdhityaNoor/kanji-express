@@ -1,5 +1,5 @@
 import { MongoClient, type Db, type Collection } from 'mongodb'
-import type { UserDoc } from './user'
+import type { UserDoc } from './user.js'
 
 const uri = process.env.MONGODB_URI
 const dbName = process.env.MONGODB_DB || 'kanji_express'

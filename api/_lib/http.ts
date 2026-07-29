@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
+type ErrorLike = {
+  name?: unknown
+  message?: unknown
+}
+
 export function sendJson(res: VercelResponse, status: number, body: unknown): void {
   res.status(status).json(body)
 }
@@ -42,3 +47,39 @@ export function validateName(name: unknown): string | null {
 }
 
 export const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const
+
+function errorMessage(err: unknown): string {
+  if (!err || typeof err !== 'object') return ''
+  const message = (err as ErrorLike).message
+  return typeof message === 'string' ? message : ''
+}
+
+function errorName(err: unknown): string {
+  if (!err || typeof err !== 'object') return ''
+  const name = (err as ErrorLike).name
+  return typeof name === 'string' ? name : ''
+}
+
+export function sendApiError(res: VercelResponse, context: string, err: unknown): void {
+  console.error(`${context} error`, err)
+
+  const message = errorMessage(err)
+  const name = errorName(err)
+
+  if (message === 'MONGODB_URI is not set') {
+    sendJson(res, 503, { error: 'Database is not configured.' })
+    return
+  }
+
+  if (message === 'JWT_SECRET is not set') {
+    sendJson(res, 503, { error: 'Authentication is not configured.' })
+    return
+  }
+
+  if (name === 'MongoServerSelectionError' || name === 'MongoNetworkError') {
+    sendJson(res, 503, { error: 'Database is unavailable.' })
+    return
+  }
+
+  sendJson(res, 500, { error: 'Something went wrong. Please try again.' })
+}

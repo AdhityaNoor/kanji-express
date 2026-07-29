@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { users } from '../_lib/mongodb'
-import { verifyPassword, signToken, setAuthCookie } from '../_lib/auth'
-import { sendJson, methodNotAllowed, readBody, validateEmail } from '../_lib/http'
-import { toPublicUser } from '../_lib/user'
+import { users } from '../_lib/mongodb.js'
+import { verifyPassword, signToken, setAuthCookie } from '../_lib/auth.js'
+import { sendJson, methodNotAllowed, readBody, validateEmail, sendApiError } from '../_lib/http.js'
+import { toPublicUser } from '../_lib/user.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST'])
@@ -27,7 +27,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     setAuthCookie(res, signToken(String(user._id)))
     return sendJson(res, 200, { user: toPublicUser(user) })
   } catch (err) {
-    console.error('login error', err)
-    return sendJson(res, 500, { error: 'Something went wrong. Please try again.' })
+    return sendApiError(res, 'login', err)
   }
 }
