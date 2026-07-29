@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Lock, Check, Play, ChevronRight, Star, Target, Route } from 'lucide-react'
+import { ArrowLeft, CaretRight as ChevronRight, Check, FlagCheckered as Route, Lock, Play, Star, Target } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -48,8 +48,8 @@ export default function CourseLevel() {
       <div className="animate-fade-up space-y-6">
         <BackLink />
         <Card className="grid place-items-center gap-3 p-10 text-center">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-bg-hover text-fg-faint">
-            <Lock className="h-7 w-7" />
+          <div className="grid h-14 w-8 place-items-center text-fg-faint">
+            <Lock className="h-8 w-8" weight="duotone" />
           </div>
           <h1 className="text-xl font-bold text-fg-strong">{course.level} is locked</h1>
           <p className="max-w-sm text-sm text-fg-muted">{unlockHint(course.level)}</p>
@@ -93,8 +93,8 @@ export default function CourseLevel() {
       {currentLesson ? (
         <Card className="border-accent/25 bg-accent/[0.04] p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-on">
-              <Route className="h-5 w-5" />
+            <div className="grid h-11 w-8 shrink-0 place-items-center text-accent-fg">
+              <Route className="h-6 w-6" weight="duotone" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold uppercase tracking-wide text-accent-fg">Next mission</p>
@@ -132,11 +132,11 @@ export default function CourseLevel() {
               <div className="flex items-center justify-between">
                 <div
                   className={cn(
-                    'grid h-10 w-10 place-items-center rounded-xl',
-                    finished ? 'bg-matcha/15 text-matcha' : p > 0 ? 'bg-accent/10 text-accent-fg' : 'bg-bg-hover text-fg-faint',
+                    'grid h-10 w-8 place-items-center',
+                    finished ? 'text-matcha' : p > 0 ? 'text-accent-fg' : 'text-fg-faint',
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-6 w-6" weight="duotone" />
                 </div>
                 {finished ? <Check className="h-4 w-4 text-matcha" /> : null}
               </div>
@@ -182,9 +182,9 @@ function BackLink() {
 }
 
 const STATUS_BADGE: Record<Lesson['status'], string> = {
-  done: 'bg-matcha/15 text-matcha',
+  done: 'text-matcha',
   current: 'bg-accent text-accent-on',
-  available: 'bg-accent/10 text-accent-fg',
+  available: 'text-accent-fg',
 }
 
 function LessonRow({ lesson }: { lesson: Lesson }) {
@@ -194,7 +194,13 @@ function LessonRow({ lesson }: { lesson: Lesson }) {
         to={lesson.href}
         className="group flex flex-col gap-3 p-4 transition-all hover:bg-bg-hover sm:flex-row sm:items-center sm:px-5"
       >
-        <div className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold', STATUS_BADGE[lesson.status])}>
+        <div
+          className={cn(
+            'grid h-10 w-8 shrink-0 place-items-center text-sm font-bold',
+            lesson.status === 'current' && 'w-10 rounded-xl',
+            STATUS_BADGE[lesson.status],
+          )}
+        >
           {lesson.status === 'done' ? <Check className="h-5 w-5" /> : lesson.index}
         </div>
 

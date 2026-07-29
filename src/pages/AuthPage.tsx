@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
+import { CircleNotch as Loader2 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/lib/auth'
 import { ApiError } from '@/lib/api'

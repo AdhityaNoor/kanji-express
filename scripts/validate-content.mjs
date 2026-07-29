@@ -5,7 +5,8 @@ import { pathToFileURL } from 'node:url'
 import ts from 'typescript'
 
 const root = process.cwd()
-const contentPath = path.join(root, 'src', 'data', 'content.ts')
+const contentPath = path.join(root, 'src', 'data', 'contentStore.ts')
+const indexPath = path.join(root, 'src', 'data', 'contentIndex.ts')
 const coursesPath = path.join(root, 'src', 'data', 'courses.ts')
 
 const requiredSectionsByLevel = {
@@ -20,11 +21,11 @@ const requiredLevels = Object.keys(requiredSectionsByLevel)
 const minimumLessonCounts = {
   'N5.overview': 4,
   'N5.vocab': 10,
-  'N5.kanji': 10,
+  'N5.kanji': 13,
   'N5.grammar': 10,
   'N5.listening': 6,
   'N5.reading': 6,
-  'N5.tests': 4,
+  'N5.tests': 9,
 }
 const mojibakePattern = /Ã|Â|â€™|â€œ|â€|ã€|ï¼|ðŸ|�/
 const japanesePattern = /[\u3040-\u30ff\u3400-\u9fff]/
@@ -158,6 +159,79 @@ function checkRegistry(lessonDefs) {
   }
 }
 
+function lessonText(lessons) {
+  return lessons
+    .flatMap((lesson) => [
+      lesson.title,
+      lesson.description,
+      lesson.mission,
+      lesson.canDo,
+      ...(lesson.items || []).flatMap((item) => Object.values(item).flatMap((value) => (Array.isArray(value) ? value : [value]))),
+    ])
+    .filter((value) => typeof value === 'string')
+    .join('\n')
+}
+
+function checkN5Manifest(content) {
+  const manifest = content.N5_SYLLABUS_MANIFEST
+  if (!manifest) {
+    fail('Missing N5_SYLLABUS_MANIFEST.')
+    return
+  }
+
+  const n5 = content.LESSON_DEFS.N5
+  for (const [section, minimum] of Object.entries(manifest.minimumLessonCounts || {})) {
+    const count = n5[section]?.length || 0
+    if (count < minimum) fail(`N5 manifest requires ${minimum} ${section} lessons; found ${count}.`)
+  }
+
+  const vocabLessonTitles = new Set((n5.vocab || []).map((lesson) => lesson.title))
+  for (const title of manifest.vocabThemes || []) {
+    if (!vocabLessonTitles.has(title)) fail(`N5 vocab theme is not covered by a lesson: ${title}.`)
+  }
+
+  const grammarText = lessonText(n5.grammar || [])
+  for (const point of manifest.grammarPoints || []) {
+    for (const token of point.tokens || []) {
+      if (!grammarText.includes(token)) fail(`N5 grammar point ${point.id} is missing token: ${token}.`)
+    }
+  }
+
+  const n5Kanji = new Set()
+  for (const lesson of n5.kanji || []) {
+    for (const item of lesson.items || []) {
+      if (item.kind === 'kanji') n5Kanji.add(item.char)
+    }
+  }
+  for (const char of manifest.kanji || []) {
+    if (!n5Kanji.has(char)) fail(`N5 manifest kanji is missing from kanji lessons: ${char}.`)
+  }
+
+  const readingTitles = lessonText(n5.reading || []).toLowerCase()
+  for (const task of manifest.readingTasks || []) {
+    if (!readingTitles.includes(task.toLowerCase())) fail(`N5 reading task is not represented: ${task}.`)
+  }
+
+  const listeningTitles = lessonText(n5.listening || []).toLowerCase()
+  for (const task of manifest.listeningTasks || []) {
+    if (!listeningTitles.includes(task.toLowerCase())) fail(`N5 listening task is not represented: ${task}.`)
+  }
+
+  const testSkillCounts = { vocab: 0, grammar: 0, reading: 0, listening: 0 }
+  for (const lesson of n5.tests || []) {
+    for (const item of lesson.items || []) {
+      if (item.kind !== 'quiz') continue
+      const skill = item.skill || 'grammar'
+      if (skill in testSkillCounts) testSkillCounts[skill] += 1
+    }
+  }
+  for (const [skill, minimum] of Object.entries(manifest.practiceSkillMinimums || {})) {
+    if ((testSkillCounts[skill] || 0) < minimum) {
+      fail(`N5 tests need at least ${minimum} ${skill} quiz items; found ${testSkillCounts[skill] || 0}.`)
+    }
+  }
+}
+
 function recordResolvedQuiz(item) {
   resolvedQuizCount += 1
   resolvedAnswerCounts.set(item.answer, (resolvedAnswerCounts.get(item.answer) || 0) + 1)
@@ -217,10 +291,12 @@ async function loadContentModule() {
 }
 
 checkRawEncoding(contentPath)
+checkRawEncoding(indexPath)
 checkRawEncoding(coursesPath)
 
 const content = await loadContentModule()
 checkRegistry(content.LESSON_DEFS)
+checkN5Manifest(content)
 checkResolvedQuizDistribution(content)
 
 if (errors.length > 0) {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Eraser, Undo2, Play, Sparkles, PenLine } from 'lucide-react'
+import { ArrowUUpLeft as Undo2, Eraser, PencilLine as PenLine, Play, Sparkle as Sparkles } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { strokePathsFor } from '@/data/strokeData'

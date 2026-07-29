@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { X, Check, ChevronRight, RotateCcw, Trophy } from 'lucide-react'
+import { ArrowCounterClockwise as RotateCcw, CaretRight as ChevronRight, Check, Trophy, X } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { SpeakButton } from '@/components/ui/SpeakButton'
 import { getLevel, SECTION_META, SECTION_ORDER, lessonTitle, lessonDescription, type SectionId } from '@/data/courses'
-import { getLessonDef, getLessonItems, type StudyItem } from '@/data/content'
+import { getLessonDef, getLessonItems, type LessonDef, type StudyItem } from '@/data/content'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -21,14 +21,9 @@ export default function Lesson() {
   const sectionId = SECTION_ORDER.includes(section as SectionId) ? (section as SectionId) : undefined
   const lessonIndex = Number.parseInt(lesson, 10) || 0
 
-  const items = useMemo(
-    () => (course && sectionId ? getLessonItems(course.level, sectionId, lessonIndex) : []),
-    [course, sectionId, lessonIndex],
-  )
-  const lessonDef = useMemo(
-    () => (course && sectionId ? getLessonDef(course.level, sectionId, lessonIndex) : undefined),
-    [course, sectionId, lessonIndex],
-  )
+  const [items, setItems] = useState<StudyItem[]>([])
+  const [lessonDef, setLessonDef] = useState<LessonDef | undefined>()
+  const [loading, setLoading] = useState(true)
 
   const { setUser } = useAuth()
   const [step, setStep] = useState(0)
@@ -36,6 +31,50 @@ export default function Lesson() {
   const [picked, setPicked] = useState<number | null>(null)
   const [correct, setCorrect] = useState(0)
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setItems([])
+    setLessonDef(undefined)
+    setStep(0)
+    setRevealed(false)
+    setPicked(null)
+    setCorrect(0)
+    setDone(false)
+
+    if (!course || !sectionId) {
+      setLoading(false)
+      return
+    }
+
+    Promise.all([
+      getLessonItems(course.level, sectionId, lessonIndex),
+      getLessonDef(course.level, sectionId, lessonIndex),
+    ])
+      .then(([nextItems, nextDef]) => {
+        if (!active) return
+        setItems(nextItems)
+        setLessonDef(nextDef)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [course, sectionId, lessonIndex])
+
+  if (loading) {
+    return (
+      <div className="animate-fade-up">
+        <Card className="p-10 text-center">
+          <p className="text-sm text-fg-muted">Loading lesson...</p>
+        </Card>
+      </div>
+    )
+  }
 
   if (!course || !sectionId || items.length === 0) {
     return (
@@ -93,8 +132,8 @@ export default function Lesson() {
       <div className="mx-auto max-w-md animate-fade-up">
         <Card className="p-8 text-center">
           <div className="ke-watermark -right-5 -top-8 text-[7rem]">完</div>
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent/10 text-accent-fg animate-pop">
-            <Trophy className="h-10 w-10" />
+          <div className="mx-auto grid h-20 w-10 place-items-center text-accent-fg animate-pop">
+            <Trophy className="h-11 w-11" weight="duotone" />
           </div>
           <h1 className="mt-4 text-2xl font-extrabold text-fg-strong">Lesson complete!</h1>
           <p className="mt-1 text-sm text-fg-muted">

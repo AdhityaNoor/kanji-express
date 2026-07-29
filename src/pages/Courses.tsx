@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Lock, ChevronRight, Check, Sparkles } from 'lucide-react'
+import { CaretRight as ChevronRight, Check, Lock, Sparkle as Sparkles } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -125,17 +125,17 @@ export default function Courses() {
                       key={s.id}
                       title={`${s.name} - ${sPct}%`}
                       className={cn(
-                        'grid h-8 w-8 place-items-center rounded-lg ring-1 ring-inset ring-line',
+                        'grid h-8 w-7 place-items-center',
                         !unlocked
-                          ? 'bg-bg-soft text-fg-faint'
+                          ? 'text-fg-faint'
                           : sDone
-                            ? 'bg-matcha/15 text-matcha'
+                            ? 'text-matcha'
                             : sPct > 0
-                              ? 'bg-accent/10 text-accent-fg'
-                              : 'bg-bg-soft text-fg-faint',
+                              ? 'text-accent-fg'
+                              : 'text-fg-faint',
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" weight="duotone" />
                     </span>
                   )
                 })}

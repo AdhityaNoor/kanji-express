@@ -1,4 +1,4 @@
-import { Volume2 } from 'lucide-react'
+import { SpeakerHigh as Volume2 } from '@phosphor-icons/react'
 import { useSpeak } from '@/lib/useSpeak'
 import { cn } from '@/lib/cn'
 

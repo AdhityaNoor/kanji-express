@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Info, Loader2 } from 'lucide-react'
+import { CircleNotch as Loader2, Info } from '@phosphor-icons/react'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { KanjiCanvas } from '@/components/write/KanjiCanvas'
 import { SpeakButton } from '@/components/ui/SpeakButton'
 import { allKanji } from '@/data/content'
+import type { KanjiEntry } from '@/data/content'
 import { fetchJlptKanji, fetchKanjiInfo, fetchKanjiWords, type KanjiInfo, type KanjiJlptLevel, type KanjiWord } from '@/lib/kanjiApi'
 import { useAuth } from '@/lib/auth'
 import { isLevelUnlocked, type Completed } from '@/lib/progress'
@@ -17,7 +18,18 @@ export default function StrokeLab() {
   const { user } = useAuth()
   const completed: Completed = user?.progress.completedLessons ?? {}
 
-  const builtin = useMemo(() => allKanji(), [])
+  const [builtin, setBuiltin] = useState<KanjiEntry[]>([])
+
+  useEffect(() => {
+    let active = true
+    allKanji().then((kanji) => {
+      if (active) setBuiltin(kanji)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   const builtinByChar = useMemo(() => new Map(builtin.map((k) => [k.char, k])), [builtin])
   const builtinByLevel = useMemo(() => {
     const m = new Map<KanjiJlptLevel, string[]>()

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ChevronRight, NotebookPen, PenLine } from 'lucide-react'
+import { CaretRight as ChevronRight, Notebook as NotebookPen, PencilLine as PenLine } from '@phosphor-icons/react'
 import { cn } from '@/lib/cn'
 
 const WRITE_MENUS = [
@@ -35,12 +35,12 @@ export default function Write() {
           <Link key={to} to={to} className="group block">
             <div
               className={cn(
-                'grid gap-4 p-4 transition-colors hover:bg-bg-hover sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:items-center sm:p-5',
+                'grid gap-4 p-4 transition-colors hover:bg-bg-hover sm:grid-cols-[32px_minmax(0,1fr)_auto] sm:items-center sm:p-5',
                 index > 0 && 'border-t border-line',
               )}
             >
-              <div className="grid h-11 w-11 place-items-center rounded-lg bg-bg-soft text-fg ring-1 ring-inset ring-line">
-                <Icon className="h-5 w-5" />
+              <div className="grid h-11 w-8 place-items-center text-accent-fg">
+                <Icon className="h-6 w-6" weight="duotone" />
               </div>
               <div className="min-w-0">
                 <h2 className="text-base font-extrabold text-fg-strong">{title}</h2>

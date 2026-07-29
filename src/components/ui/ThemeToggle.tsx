@@ -1,5 +1,5 @@
 import { Button } from '@heroui/react'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from '@phosphor-icons/react'
 import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/cn'
 

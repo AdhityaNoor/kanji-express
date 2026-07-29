@@ -1,31 +1,31 @@
 import {
   BookOpen,
-  PenLine,
+  PencilLine,
   FileText,
   Headphones,
-  ScrollText,
-  ClipboardCheck,
+  Scroll,
+  ListChecks,
   Compass,
-  Languages,
-  MessageCircle,
-  ListTree,
+  Translate,
+  ChatCircleText,
+  TreeStructure,
   Repeat,
-  Map,
-  type LucideIcon,
-} from 'lucide-react'
+  MapTrifold,
+  type Icon,
+} from '@phosphor-icons/react'
 import type { SectionId } from '@/data/courses'
 
-export const SECTION_ICON: Record<SectionId, LucideIcon> = {
+export const SECTION_ICON: Record<SectionId, Icon> = {
   orientation: Compass,
-  kana: Languages,
-  phrases: MessageCircle,
-  sentences: ListTree,
+  kana: Translate,
+  phrases: ChatCircleText,
+  sentences: TreeStructure,
   study: Repeat,
-  overview: Map,
+  overview: MapTrifold,
   vocab: BookOpen,
-  kanji: PenLine,
+  kanji: PencilLine,
   grammar: FileText,
   listening: Headphones,
-  reading: ScrollText,
-  tests: ClipboardCheck,
+  reading: Scroll,
+  tests: ListChecks,
 }

@@ -6,7 +6,7 @@
 // state are derived from src/lib/progress.ts.
 // ---------------------------------------------------------------------------
 
-import { LESSON_DEFS } from './content'
+import { LESSON_INDEX } from './contentIndex'
 
 export type CourseLevelId = 'STARTER' | 'N5' | 'N4' | 'N3' | 'N2' | 'N1'
 export type JlptLevel = CourseLevelId
@@ -57,15 +57,15 @@ export function levelSections(level: CourseLevelId): SectionId[] {
 }
 
 export function lessonCount(level: CourseLevelId, section: SectionId): number {
-  return LESSON_DEFS[level][section]?.length ?? 0
+  return LESSON_INDEX[level][section]?.length ?? 0
 }
 
 export function lessonTitle(level: CourseLevelId, section: SectionId, index: number): string {
-  return LESSON_DEFS[level][section]?.[index]?.title ?? `Lesson ${index + 1}`
+  return LESSON_INDEX[level][section]?.[index]?.title ?? `Lesson ${index + 1}`
 }
 
 export function lessonDescription(level: CourseLevelId, section: SectionId, index: number): string {
-  return LESSON_DEFS[level][section]?.[index]?.description ?? ''
+  return LESSON_INDEX[level][section]?.[index]?.description ?? ''
 }
 
 function sectionsFor(level: CourseLevelId): CourseSection[] {
@@ -156,7 +156,7 @@ export function buildLessons(
   sectionId: SectionId,
   completed: CompletedLessons,
 ): Lesson[] {
-  const defs = LESSON_DEFS[level.level][sectionId] ?? []
+  const defs = LESSON_INDEX[level.level][sectionId] ?? []
   let currentAssigned = false
 
   return defs.map((def, i) => {
@@ -182,7 +182,7 @@ export function buildLessons(
       subtitle: SECTION_META[sectionId].name,
       xp: 20 + i * 5,
       status,
-      itemCount: def.items.length,
+      itemCount: def.itemCount,
       section: sectionId,
       href: `/courses/${level.level.toLowerCase()}/${sectionId}/${i}`,
       accuracy: record ? Math.round((record.correct / record.total) * 100) : undefined,

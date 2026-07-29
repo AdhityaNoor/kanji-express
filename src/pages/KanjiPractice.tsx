@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
-import { BookOpenCheck, CheckCircle2, Lock, Trophy } from 'lucide-react'
+import { BookOpenText as BookOpenCheck, CheckCircle as CheckCircle2, Lock, Trophy } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody } from '@/components/ui/Card'
@@ -54,7 +54,18 @@ type PracticeProgress = Record<string, PracticeRecord>
 const emptyRecord = (): PracticeRecord => ({ passes: 0, attempts: 0, bestScore: 0 })
 
 export default function KanjiPractice() {
-  const builtin = useMemo(() => allKanji(), [])
+  const [builtin, setBuiltin] = useState<KanjiEntry[]>([])
+
+  useEffect(() => {
+    let active = true
+    allKanji().then((kanji) => {
+      if (active) setBuiltin(kanji)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   const builtinByChar = useMemo(() => new Map([...builtin, ...RADICALS].map((k) => [k.char, k])), [builtin])
   const builtinByLevel = useMemo(() => {
     const m = new Map<KanjiJlptLevel, string[]>()
@@ -207,8 +218,8 @@ export default function KanjiPractice() {
             {levelComplete ? (
               <div className="mt-5 rounded-xl border border-line bg-bg-soft p-5">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-matcha/15 text-matcha">
-                    <Trophy className="h-6 w-6" />
+                  <div className="grid h-12 w-8 place-items-center text-matcha">
+                    <Trophy className="h-7 w-7" weight="duotone" />
                   </div>
                   <div>
                     <p className="font-bold text-fg-strong">{level} writing complete</p>

@@ -1,5 +1,15 @@
 import { useState } from 'react'
-import { Flame, Zap, Coins, BookOpenCheck, Trophy, Calendar, LogOut, Check, Pencil } from 'lucide-react'
+import {
+  BookOpenText as BookOpenCheck,
+  Calendar,
+  Check,
+  Coins,
+  Fire as Flame,
+  Lightning as Zap,
+  Pencil,
+  SignOut as LogOut,
+  Trophy,
+} from '@phosphor-icons/react'
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -40,12 +50,12 @@ export default function Profile() {
   })
 
   const stats = [
-    { icon: Zap, label: 'Total XP', value: p.xp.toLocaleString(), tone: 'text-accent-fg', bg: 'bg-accent/10' },
-    { icon: Trophy, label: 'Level', value: `Lv ${p.level}`, tone: 'text-accent-fg', bg: 'bg-accent/10' },
-    { icon: Flame, label: 'Current streak', value: `${p.streak}d`, tone: 'text-amber', bg: 'bg-amber/15' },
-    { icon: Flame, label: 'Longest streak', value: `${p.longestStreak}d`, tone: 'text-coral', bg: 'bg-coral/15' },
-    { icon: Coins, label: 'Coins', value: p.coins.toLocaleString(), tone: 'text-sakura', bg: 'bg-sakura/15' },
-    { icon: BookOpenCheck, label: 'Lessons done', value: String(p.completedLessonCount), tone: 'text-matcha', bg: 'bg-matcha/15' },
+    { icon: Zap, label: 'Total XP', value: p.xp.toLocaleString(), tone: 'text-accent-fg' },
+    { icon: Trophy, label: 'Level', value: `Lv ${p.level}`, tone: 'text-accent-fg' },
+    { icon: Flame, label: 'Current streak', value: `${p.streak}d`, tone: 'text-amber' },
+    { icon: Flame, label: 'Longest streak', value: `${p.longestStreak}d`, tone: 'text-coral' },
+    { icon: Coins, label: 'Coins', value: p.coins.toLocaleString(), tone: 'text-sakura' },
+    { icon: BookOpenCheck, label: 'Lessons done', value: String(p.completedLessonCount), tone: 'text-matcha' },
   ]
 
   return (
@@ -122,8 +132,8 @@ export default function Profile() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {stats.map((s) => (
           <Card key={s.label} className="flex items-center gap-3 p-4 ke-pressable">
-            <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${s.bg} ${s.tone}`}>
-              <s.icon className="h-5 w-5" />
+            <div className={`grid h-11 w-8 shrink-0 place-items-center ${s.tone}`}>
+              <s.icon className="h-6 w-6" weight="duotone" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs text-fg-muted">{s.label}</p>

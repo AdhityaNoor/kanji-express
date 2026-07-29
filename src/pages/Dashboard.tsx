@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom'
 import {
-  Flame,
-  Zap,
+  BookOpenText as BookOpenCheck,
+  CaretRight as ChevronRight,
+  Clock,
   Coins,
-  BookOpenCheck,
-  Target,
-  ChevronRight,
-  Play,
-  AlertTriangle,
-  Sparkles,
-  Clock3,
+  Fire as Flame,
   GraduationCap,
-} from 'lucide-react'
+  Lightning as Zap,
+  Play,
+  Sparkle as Sparkles,
+  Target,
+  Warning as AlertTriangle,
+} from '@phosphor-icons/react'
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -90,7 +90,7 @@ export default function Dashboard() {
                 <GraduationCap className="h-3 w-3" /> Target {target}
               </Badge>
               <Badge tone="amber">
-                <Clock3 className="h-3 w-3" /> {xpToday}/{DAILY_XP_GOAL} XP today
+                <Clock className="h-3 w-3" /> {xpToday}/{DAILY_XP_GOAL} XP today
               </Badge>
               <Badge tone="matcha">
                 <BookOpenCheck className="h-3 w-3" /> {lessonsToday} lesson{lessonsToday === 1 ? '' : 's'}
@@ -116,10 +116,10 @@ export default function Dashboard() {
 
       {/* Top stat chips */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <StatChip icon={Flame} label="Current streak" value={`${p?.streak ?? 0} days`} sub={`Best ${p?.longestStreak ?? 0}`} tone="text-amber" iconBg="bg-amber/15" />
-        <StatChip icon={Zap} label="Level & XP" value={`Lv ${p?.level ?? 1}`} sub={`${xpIntoLevel} / 500 XP`} tone="text-accent-fg" iconBg="bg-accent/10" />
-        <StatChip icon={BookOpenCheck} label="Lessons today" value={String(lessonsToday)} sub={`${p?.completedLessonCount ?? 0} all-time`} tone="text-matcha" iconBg="bg-matcha/15" />
-        <StatChip icon={Coins} label="Coins" value={(p?.coins ?? 0).toLocaleString()} sub="Spend in shop" tone="text-sakura" iconBg="bg-sakura/15" />
+        <StatChip icon={Flame} label="Current streak" value={`${p?.streak ?? 0} days`} sub={`Best ${p?.longestStreak ?? 0}`} tone="text-amber" />
+        <StatChip icon={Zap} label="Level & XP" value={`Lv ${p?.level ?? 1}`} sub={`${xpIntoLevel} / 500 XP`} tone="text-accent-fg" />
+        <StatChip icon={BookOpenCheck} label="Lessons today" value={String(lessonsToday)} sub={`${p?.completedLessonCount ?? 0} all-time`} tone="text-matcha" />
+        <StatChip icon={Coins} label="Coins" value={(p?.coins ?? 0).toLocaleString()} sub="Spend in shop" tone="text-sakura" />
       </div>
 
       {/* Row: Daily goal ring + Up next */}
@@ -171,8 +171,8 @@ export default function Dashboard() {
                     to={lesson.href}
                     className="group flex items-center gap-3 rounded-xl border border-line bg-bg-soft p-3 transition-all hover:-translate-y-0.5 hover:border-accent/35 hover:bg-bg-hover"
                   >
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent-fg">
-                      <Icon className="h-5 w-5" />
+                    <div className="grid h-11 w-8 shrink-0 place-items-center text-accent-fg">
+                      <Icon className="h-6 w-6" weight="duotone" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-fg-strong">{lesson.title}</p>
