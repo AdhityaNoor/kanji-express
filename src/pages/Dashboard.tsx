@@ -72,7 +72,7 @@ export default function Dashboard() {
   const studyDayCount = p?.studyDays.length ?? 0
   const studyHours = Math.round(((p?.completedLessonCount ?? 0) * 4) / 60)
 
-  const startHref = active ? `/courses/${active.level.toLowerCase()}` : '/courses'
+  const startHref = '/session?duration=15'
 
   return (
     <div className="animate-fade-up space-y-6">

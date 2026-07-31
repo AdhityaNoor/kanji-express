@@ -4,6 +4,7 @@ import { RequireAuth } from '@/components/auth/RequireAuth'
 import Landing from '@/pages/Landing'
 import AuthPage from '@/pages/AuthPage'
 import Dashboard from '@/pages/Dashboard'
+import TodaySession from '@/pages/TodaySession'
 import Courses from '@/pages/Courses'
 import CourseLevel from '@/pages/CourseLevel'
 import Lesson from '@/pages/Lesson'
@@ -25,6 +26,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="session" element={<TodaySession />} />
           <Route path="courses" element={<Courses />} />
           <Route path="courses/:level" element={<CourseLevel />} />
           <Route path="courses/:level/:section/:lesson" element={<Lesson />} />

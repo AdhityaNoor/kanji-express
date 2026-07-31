@@ -138,26 +138,26 @@
 :root {
   color-scheme: dark;
 
-  --bg: 11 15 26;
-  --bg-soft: 17 23 38;
-  --bg-card: 21 28 46;
-  --bg-hover: 27 35 56;
-  --line: 35 44 68;
+  --bg: 10 10 10;
+  --bg-soft: 20 20 20;
+  --bg-card: 26 26 26;
+  --bg-hover: 38 38 38;
+  --line: 45 45 45;
 
-  --fg: 226 232 240;
-  --fg-strong: 255 255 255;
-  --muted: 148 163 184;
-  --faint: 100 116 139;
+  --fg: 228 228 231;
+  --fg-strong: 250 250 250;
+  --muted: 161 161 161;
+  --faint: 115 115 115;
 
-  --accent: 255 255 255;
-  --accent-strong: 236 232 224;
-  --accent-fg: 255 255 255;
-  --on-accent: 18 17 15;
+  --accent: 63 63 70;
+  --accent-strong: 82 82 91;
+  --accent-fg: 212 212 216;
+  --on-accent: 244 244 245;
 
-  --heat-1: 26 42 115;
-  --heat-2: 24 45 180;
-  --heat-3: 51 85 255;
-  --heat-4: 142 171 255;
+  --heat-1: 38 38 38;
+  --heat-2: 82 82 82;
+  --heat-3: 140 140 140;
+  --heat-4: 212 212 212;
 
   --shadow: 0 0 0;
 
@@ -223,18 +223,44 @@
 
   .landing-delay-1 {
     animation-delay: 0.08s;
+    transition-delay: 0.08s;
   }
 
   .landing-delay-2 {
     animation-delay: 0.16s;
+    transition-delay: 0.16s;
   }
 
   .landing-delay-3 {
     animation-delay: 0.24s;
+    transition-delay: 0.24s;
   }
 
   .landing-delay-4 {
     animation-delay: 0.32s;
+    transition-delay: 0.32s;
+  }
+
+  /* Scroll-triggered "fly up from below" reveal. Starts hidden + pushed down,
+     lands in place when the .is-visible class is added by the IntersectionObserver. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(64px) scale(0.985);
+    transition:
+      opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Full-screen snap sections for the landing scroller. */
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .landing-float {
@@ -319,5 +345,10 @@ body {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

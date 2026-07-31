@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -75,22 +76,55 @@ const stats = [
 export default function Landing() {
   const { user } = useAuth()
   const ctaHref = user ? '/dashboard' : '/login'
+  const rootRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+
+    const els = Array.from(root.querySelectorAll<HTMLElement>('.reveal'))
+
+    // No IntersectionObserver (or reduced motion) → just show everything.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion || typeof IntersectionObserver === 'undefined') {
+      els.forEach((el) => el.classList.add('is-visible'))
+      return
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            io.unobserve(entry.target)
+          }
+        }
+      },
+      { root, threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    )
+
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
 
   return (
-    <main className="min-h-screen overflow-hidden bg-bg text-fg">
-      <section className="relative min-h-[100svh]">
+    <main
+      ref={rootRef}
+      className="h-screen snap-y snap-mandatory overflow-y-auto overflow-x-hidden scroll-smooth bg-bg text-fg"
+    >
+      <section className="snap-section relative min-h-[100svh]">
         <img src="/landing-hero.png" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" aria-hidden="true" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgb(255_255_255/0.18),transparent_34rem),linear-gradient(180deg,rgb(0_0_0/0.34),rgb(var(--bg)/0.96)_82%)]" />
         <div className="absolute inset-x-0 top-0 h-px bg-white/25" />
 
         <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-          <Link to="/" className="landing-reveal flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <Link to="/" className="reveal flex min-w-0 items-center gap-2.5 sm:gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white font-display text-sm font-black text-black shadow-lg sm:h-10 sm:w-10 sm:text-base">
               {'\u5feb'}
             </span>
             <span className="truncate text-sm font-extrabold tracking-wide text-white max-[370px]:hidden">Kanji Express</span>
           </Link>
-          <nav className="landing-reveal landing-delay-1 flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <nav className="reveal landing-delay-1 flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeToggle className="text-white/80 hover:bg-white/10 hover:text-white" />
             <Link
               to="/login"
@@ -109,16 +143,16 @@ export default function Landing() {
 
         <div className="relative z-10 mx-auto grid min-h-[calc(100svh-72px)] w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 pb-12 pt-6 sm:min-h-[calc(100svh-84px)] sm:gap-10 sm:px-6 sm:pb-16 sm:pt-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
           <div className="min-w-0 max-w-3xl">
-            <div className="landing-reveal mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/18 bg-white/8 px-3 py-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-white/86 shadow-card backdrop-blur sm:mb-5 sm:text-xs sm:tracking-[0.14em]">
+            <div className="reveal mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/18 bg-white/8 px-3 py-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-white/86 shadow-card backdrop-blur sm:mb-5 sm:text-xs sm:tracking-[0.14em]">
               <Sparkle className="h-3.5 w-3.5 shrink-0" weight="fill" /> <span className="truncate">JLPT study without the cold start</span>
             </div>
-            <h1 className="landing-reveal landing-delay-1 max-w-[18ch] text-4xl font-black leading-[0.98] text-white min-[380px]:text-5xl sm:max-w-4xl sm:text-6xl sm:leading-[0.95] lg:text-7xl">
+            <h1 className="reveal landing-delay-1 max-w-[18ch] text-4xl font-black leading-[0.98] text-white min-[380px]:text-5xl sm:max-w-4xl sm:text-6xl sm:leading-[0.95] lg:text-7xl">
               Learn Japanese through one calm, guided route.
             </h1>
-            <p className="landing-reveal landing-delay-2 mt-5 max-w-[36rem] text-sm leading-6 text-white/78 sm:mt-6 sm:text-lg sm:leading-7">
+            <p className="reveal landing-delay-2 mt-5 max-w-[36rem] text-sm leading-6 text-white/78 sm:mt-6 sm:text-lg sm:leading-7">
               Kanji Express combines a Starter track, JLPT courses, handwriting, spaced reviews, audio practice, and AI explanations into a simple daily workflow.
             </p>
-            <div className="landing-reveal landing-delay-3 mt-8 grid w-full max-w-sm gap-3 md:flex md:max-w-none md:flex-row">
+            <div className="reveal landing-delay-3 mt-8 grid w-full max-w-sm gap-3 md:flex md:max-w-none md:flex-row">
               <Link to={ctaHref} className="min-w-0">
                 <Button size="lg" className="w-full max-w-full justify-center truncate bg-white text-black hover:bg-white/90 md:w-auto">
                   {user ? 'Continue learning' : 'Start learning'} <ArrowRight className="h-4 w-4" />
@@ -132,7 +166,7 @@ export default function Landing() {
               </a>
             </div>
 
-            <div className="landing-reveal landing-delay-4 mt-8 max-w-full overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)] sm:mt-10 sm:[mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
+            <div className="reveal landing-delay-4 mt-8 max-w-full overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)] sm:mt-10 sm:[mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
               <div className="landing-marquee flex w-max gap-2">
                 {[...proof, ...proof].map((item, index) => (
                   <span key={`${item}-${index}`} className="rounded-full border border-white/14 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white/72 backdrop-blur">
@@ -147,10 +181,10 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-bg-card/70 backdrop-blur">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px px-4 sm:grid-cols-4 sm:px-6 lg:px-8">
+      <section className="snap-section flex min-h-screen items-center border-y border-line bg-bg-card/70 backdrop-blur">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-px px-4 sm:grid-cols-4 sm:px-6 lg:px-8">
           {stats.map(([value, label], index) => (
-            <div key={label} className="landing-reveal py-5 sm:px-6 sm:py-6" style={{ animationDelay: `${index * 70}ms` }}>
+            <div key={label} className="reveal py-5 sm:px-6 sm:py-6" style={{ transitionDelay: `${index * 70}ms` }}>
               <p className="text-2xl font-black text-fg-strong sm:text-3xl">{value}</p>
               <p className="mt-1 text-sm font-medium text-fg-muted">{label}</p>
             </div>
@@ -158,17 +192,19 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="features" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+      <section id="features" className="snap-section flex min-h-screen flex-col justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl">
         <SectionIntro eyebrow="The product" title="A learning app that feels light, but covers the serious work." />
         <div className="mt-8 grid gap-4 md:mt-10 md:grid-cols-2">
           {modules.map((item, index) => (
             <FeatureCard key={item.title} {...item} featured={index === 0} delay={index * 80} />
           ))}
         </div>
+        </div>
       </section>
 
-      <section className="bg-bg-soft/62">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10 lg:px-8">
+      <section className="snap-section flex min-h-screen items-center bg-bg-soft/62">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10 lg:px-8">
           <div>
             <SectionIntro eyebrow="The route" title="Start small. Unlock depth as momentum builds." />
             <p className="mt-4 text-sm leading-6 text-fg-muted sm:mt-5">
@@ -181,8 +217,8 @@ export default function Landing() {
               {path.map(([level, body], index) => (
                 <div
                   key={level}
-                  className="landing-reveal landing-card relative flex items-start gap-3 rounded-2xl border border-line bg-bg-card/92 p-4 shadow-card sm:gap-4"
-                  style={{ animationDelay: `${index * 70}ms` }}
+                  className="reveal landing-card relative flex items-start gap-3 rounded-2xl border border-line bg-bg-card/92 p-4 shadow-card sm:gap-4"
+                  style={{ transitionDelay: `${index * 70}ms` }}
                 >
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-black text-accent-on sm:h-10 sm:w-10">
                     {index + 1}
@@ -199,17 +235,19 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <SectionIntro eyebrow="Inside the app" title="Everything learners open daily, highlighted up front." />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-10 lg:grid-cols-4">
-          {productCards.map((item, index) => (
-            <MiniCard key={item.title} {...item} delay={index * 80} />
-          ))}
+      <section className="snap-section flex min-h-screen flex-col justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl">
+          <SectionIntro eyebrow="Inside the app" title="Everything learners open daily, highlighted up front." />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-10 lg:grid-cols-4">
+            {productCards.map((item, index) => (
+              <MiniCard key={item.title} {...item} delay={index * 80} />
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 sm:pb-20 lg:px-8">
-        <div className="landing-reveal landing-card mx-auto max-w-7xl overflow-hidden rounded-3xl border border-line bg-bg-card shadow-card">
+      <section className="snap-section flex min-h-screen items-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="reveal landing-card mx-auto w-full max-w-7xl overflow-hidden rounded-3xl border border-line bg-bg-card shadow-card">
           <div className="grid gap-6 p-5 sm:gap-8 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
             <div>
               <p className="ke-section-label">Ready when you are</p>
@@ -234,7 +272,7 @@ export default function Landing() {
 
 function HeroPreview() {
   return (
-    <div className="landing-reveal landing-delay-2 relative mx-auto w-full max-w-[calc(100vw-2rem)] min-w-0 sm:max-w-[34rem] lg:mr-0 lg:max-w-[38rem]">
+    <div className="reveal landing-delay-2 relative mx-auto w-full max-w-[calc(100vw-2rem)] min-w-0 sm:max-w-[34rem] lg:mr-0 lg:max-w-[38rem]">
       <div className="landing-glow absolute -inset-3 rounded-[1.75rem] border border-white/10 bg-white/6 blur-2xl sm:-inset-4 sm:rounded-[2rem]" />
       <div className="landing-float landing-card relative min-w-0 overflow-hidden rounded-[1.4rem] border border-white/14 bg-black/34 p-2.5 shadow-2xl backdrop-blur-xl sm:rounded-[1.75rem] sm:p-3">
         <span className="landing-shine" />
@@ -250,7 +288,7 @@ function HeroPreview() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.75fr]">
-            <div className="landing-reveal landing-delay-3 rounded-2xl border border-line bg-bg-card p-3 sm:p-4">
+            <div className="reveal landing-delay-3 rounded-2xl border border-line bg-bg-card p-3 sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-extrabold text-fg-strong">Next lesson</p>
                 <span className="shrink-0 text-xs font-bold text-fg-muted">+25 XP</span>
@@ -286,7 +324,7 @@ function HeroPreview() {
 
 function PreviewStat({ icon: Icon, label, value, tone, delay = 0 }: { icon: Icon; label: string; value: string; tone: string; delay?: number }) {
   return (
-    <div className="landing-reveal rounded-2xl border border-line bg-bg-card p-3 sm:p-4" style={{ animationDelay: `${delay}ms` }}>
+    <div className="reveal rounded-2xl border border-line bg-bg-card p-3 sm:p-4" style={{ transitionDelay: `${delay}ms` }}>
       <Icon className={cn('h-5 w-5 sm:h-6 sm:w-6', tone)} weight="duotone" />
       <p className="mt-3 text-xl font-black text-fg-strong sm:mt-4 sm:text-2xl">{value}</p>
       <p className="text-xs font-medium text-fg-muted">{label}</p>
@@ -296,7 +334,7 @@ function PreviewStat({ icon: Icon, label, value, tone, delay = 0 }: { icon: Icon
 
 function PreviewPill({ icon: Icon, label, delay = 0 }: { icon: Icon; label: string; delay?: number }) {
   return (
-    <div className="landing-reveal flex min-w-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-bg-card px-2 py-2 text-xs font-bold text-fg sm:justify-start sm:gap-2 sm:px-3 sm:text-sm" style={{ animationDelay: `${delay}ms` }}>
+    <div className="reveal flex min-w-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-bg-card px-2 py-2 text-xs font-bold text-fg sm:justify-start sm:gap-2 sm:px-3 sm:text-sm" style={{ transitionDelay: `${delay}ms` }}>
       <Icon className="h-4 w-4 shrink-0 text-accent-fg" weight="duotone" />
       <span className="truncate">{label}</span>
     </div>
@@ -316,10 +354,10 @@ function FeatureCard({ icon: Icon, title, body, featured = false, delay = 0 }: {
   return (
     <article
       className={cn(
-        'landing-reveal landing-card group relative overflow-hidden rounded-2xl border border-line bg-bg-card/92 p-5 shadow-card transition-all hover:-translate-y-1 hover:border-accent/35 sm:rounded-3xl sm:p-6',
+        'reveal landing-card group relative overflow-hidden rounded-2xl border border-line bg-bg-card/92 p-5 shadow-card transition-all duration-700 hover:-translate-y-1 hover:border-accent/35 sm:rounded-3xl sm:p-6',
         featured && 'md:row-span-2',
       )}
-      style={{ animationDelay: `${delay}ms` }}
+      style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="ke-watermark -right-3 -top-5 text-[5.5rem] sm:-right-4 sm:-top-7 sm:text-[7rem]">{'\u5b66'}</div>
       <Icon className="relative h-7 w-7 text-accent-fg sm:h-8 sm:w-8" weight="duotone" />
@@ -347,8 +385,8 @@ function FeatureCard({ icon: Icon, title, body, featured = false, delay = 0 }: {
 function MiniCard({ icon: Icon, title, body, delay = 0 }: { icon: Icon; title: string; body: string; delay?: number }) {
   return (
     <article
-      className="landing-reveal landing-card rounded-2xl border border-line bg-bg-card/90 p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-accent/35"
-      style={{ animationDelay: `${delay}ms` }}
+      className="reveal landing-card rounded-2xl border border-line bg-bg-card/90 p-5 shadow-card transition-all duration-700 hover:-translate-y-0.5 hover:border-accent/35"
+      style={{ transitionDelay: `${delay}ms` }}
     >
       <Icon className="h-7 w-7 text-accent-fg" weight="duotone" />
       <h3 className="mt-5 text-base font-black text-fg-strong sm:mt-6">{title}</h3>
